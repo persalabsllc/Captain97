@@ -386,7 +386,7 @@ p {
   box-shadow: 0 0 0 5px rgba(114, 206, 137, 0.14), 0 0 16px rgba(114, 206, 137, 0.65);
 }
 
-/* Header and code-native identity */
+/* Header and station identity */
 .site-header {
   position: sticky;
   z-index: 100;
@@ -399,134 +399,43 @@ p {
 
 .header-inner {
   display: flex;
-  min-height: 82px;
+  min-height: 92px;
   align-items: center;
   gap: 28px;
 }
 
 .brand-mark {
-  display: inline-flex;
+  display: block;
+  width: 230px;
   flex: 0 0 auto;
-  align-items: center;
-  color: var(--navy);
+  line-height: 0;
 }
 
-.brand-mark-anchor {
-  display: grid;
-  width: 43px;
-  height: 43px;
-  flex: 0 0 auto;
-  place-items: center;
-  margin-right: 10px;
-  color: var(--yellow);
-  background: var(--navy);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 50%;
-  box-shadow: 0 8px 22px rgba(23, 27, 67, 0.19);
+.brand-mark-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 7px 15px rgba(17, 23, 46, 0.13));
 }
 
-.brand-mark-lockup {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: baseline;
-  column-gap: 6px;
-  line-height: 0.92;
+.site-header .brand-mark {
+  width: 146px;
 }
 
-.brand-mark-name {
-  font-family: var(--serif);
-  font-size: 25px;
-  font-weight: 800;
-  letter-spacing: -0.055em;
-}
-
-.brand-mark-frequency {
-  color: var(--teal);
-  font-family: var(--serif);
-  font-size: 27px;
-  letter-spacing: -0.06em;
-}
-
-.brand-mark-tagline {
-  grid-column: 1 / 3;
-  margin-top: 5px;
-  color: var(--green);
-  font-size: 7.5px;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  line-height: 1.1;
-  text-transform: uppercase;
+.brand-mark-light .brand-mark-image {
+  filter: drop-shadow(0 9px 22px rgba(0, 0, 0, 0.28));
 }
 
 .brand-mark-light {
-  color: var(--white);
+  padding: 10px 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(247, 244, 235, 0.91));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2), inset 0 1px rgba(255, 255, 255, 0.8);
 }
 
-.brand-mark-light .brand-mark-anchor {
-  color: var(--navy-deep);
-  background: var(--yellow);
-}
-
-.brand-mark-light .brand-mark-frequency {
-  color: var(--yellow);
-}
-
-.brand-mark-light .brand-mark-tagline {
-  color: #a8ded0;
-}
-
-.brand-mark-compact .brand-mark-anchor {
-  width: 38px;
-  height: 38px;
-}
-
-.brand-mark-compact .brand-mark-name {
-  font-size: 22px;
-}
-
-.brand-mark-compact .brand-mark-frequency {
-  font-size: 24px;
-}
-
-.brand-emblem {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  place-items: center;
-  margin-right: 10px;
-  color: var(--yellow);
-  background: var(--navy);
-  border-radius: 50%;
-  box-shadow: 0 7px 20px rgba(23, 27, 67, 0.18);
-}
-
-.brand-copy {
-  display: grid;
-  line-height: 1;
-}
-
-.brand-name,
-.brand-wordmark {
-  font-family: var(--serif);
-  font-size: 23px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-}
-
-.brand-name strong,
-.brand-frequency,
-.brand-number {
-  color: var(--teal);
-}
-
-.brand-tagline {
-  margin-top: 4px;
-  color: var(--green);
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.brand-mark-compact {
+  width: 170px;
 }
 
 .main-nav,
@@ -822,7 +731,12 @@ p {
 .station-art .brand-mark {
   position: relative;
   z-index: 2;
-  transform: scale(1.18);
+  width: min(76%, 260px);
+}
+
+.on-air-art .brand-mark-image,
+.station-art .brand-mark-image {
+  filter: drop-shadow(0 14px 20px rgba(20, 24, 68, 0.24));
 }
 
 .on-air-meta,
@@ -2891,34 +2805,11 @@ p {
   }
 
   .header-inner {
-    min-height: 72px;
+    min-height: 80px;
   }
 
-  .brand-emblem {
-    width: 38px;
-    height: 38px;
-  }
-
-  .brand-mark-anchor {
-    width: 38px;
-    height: 38px;
-  }
-
-  .brand-mark-name {
-    font-size: 21px;
-  }
-
-  .brand-mark-frequency {
-    font-size: 23px;
-  }
-
-  .brand-mark-tagline {
-    font-size: 6.5px;
-  }
-
-  .brand-name,
-  .brand-wordmark {
-    font-size: 20px;
+  .site-header .brand-mark {
+    width: 128px;
   }
 
   .section {
@@ -3155,8 +3046,8 @@ p {
   }
 
   .mobile-menu-scrim {
-    top: 72px;
-    height: calc(100vh - 72px);
+    top: 80px;
+    height: calc(100vh - 80px);
   }
 
   .on-air-next {
