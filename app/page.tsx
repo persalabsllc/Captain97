@@ -21,10 +21,8 @@ export default function HomePage() {
 
           <div className="radio-card">
             <div className="radio-card-top"><span className="live-badge">● ON AIR</span><span>WXNR-LP</span></div>
-            <div className="album-art">
-              <div className="album-boat">⛵</div>
-              <div className="album-title">CAPTAIN<br/><b>97.1</b></div>
-              <div className="album-tag">CAROLINA&apos;S DOCK ROCK</div>
+            <div className="album-art official-art">
+              <img src="/captain97-logo.webp" alt="Captain 97 — Carolinas Dock Rock" className="album-brand-logo" />
             </div>
             <div className="now-playing-preview"><small>NOW PLAYING</small><strong>Live from New Bern</strong><span>Tap play below to start the stream</span></div>
             <a href="#listen" className="big-play" aria-label="Jump to live player">▶</a>
