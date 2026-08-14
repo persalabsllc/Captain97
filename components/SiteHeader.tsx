@@ -33,7 +33,7 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="container header-inner">
-        <BrandMark />
+        <BrandMark preload />
         <nav className="main-nav" aria-label="Main navigation">
           {navigation.map((item) => (
             <Link href={item.href} key={item.href} aria-current={pathname === item.href ? 'page' : undefined}>
