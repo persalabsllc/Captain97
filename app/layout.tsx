@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
 import './player-fix.css';
+import './logo-fix.css';
 
 export const metadata: Metadata = {
   title: "Captain 97.1 | Carolina's Dock Rock",
@@ -18,11 +19,12 @@ const nav = [
 
 function Logo() {
   return (
-    <Link href="/" className="logo" aria-label="Captain 97 home">
-      <span className="logo-anchor">⚓</span>
-      <span className="logo-main">CAPTAIN</span>
-      <span className="logo-97">97.1</span>
-      <span className="logo-tag">CAROLINA&apos;S DOCK ROCK</span>
+    <Link href="/" className="logo official-logo" aria-label="Captain 97 home">
+      <img
+        src="/captain97-logo.webp"
+        alt="Captain 97 — Carolinas Dock Rock"
+        className="brand-logo"
+      />
     </Link>
   );
 }
