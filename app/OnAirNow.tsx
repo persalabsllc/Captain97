@@ -12,7 +12,42 @@ type Show = {
   accent?: string;
 };
 
+const weekdayShows = [1, 2, 3, 4, 5].flatMap((day) => [
+  {
+    name: 'Captains Sunrise Show',
+    day,
+    start: 6 * 60,
+    end: 10 * 60,
+    accent: 'Monday–Friday · 6–10 AM',
+  },
+  {
+    name: 'Kyle on the Dial',
+    host: 'Kyle',
+    day,
+    start: 10 * 60,
+    end: 14 * 60,
+    accent: 'Monday–Friday · 10 AM–2 PM',
+  },
+  {
+    name: 'Meg Unfiltered',
+    host: 'Meg',
+    day,
+    start: 14 * 60,
+    end: 19 * 60,
+    accent: 'Monday–Friday · 2–7 PM',
+  },
+  {
+    name: 'The Ray Michaels Show',
+    host: 'Ray Michaels',
+    day,
+    start: 19 * 60,
+    end: 24 * 60,
+    accent: 'Monday–Friday · 7 PM–Midnight',
+  },
+]);
+
 const schedule: Show[] = [
+  ...weekdayShows,
   {
     name: 'Midday with Mayday',
     host: 'Mayday',
