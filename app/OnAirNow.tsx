@@ -49,6 +49,21 @@ const weekdayShows = [1, 2, 3, 4, 5].flatMap((day) => [
 const schedule: Show[] = [
   ...weekdayShows,
   {
+    name: 'Kyle on the Dial',
+    host: 'Kyle',
+    day: 6,
+    start: 10 * 60,
+    end: 14 * 60,
+    accent: 'Saturday · 10 AM–2 PM',
+  },
+  {
+    name: 'Captain 97.1',
+    day: 6,
+    start: 14 * 60,
+    end: 19 * 60,
+    accent: 'Saturday · 2–7 PM',
+  },
+  {
     name: 'Midday with Mayday',
     host: 'Mayday',
     day: 0,
