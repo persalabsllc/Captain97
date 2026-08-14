@@ -20,11 +20,7 @@ const nav = [
 function Logo() {
   return (
     <Link href="/" className="logo official-logo" aria-label="Captain 97 home">
-      <img
-        src="/captain97-logo.webp"
-        alt="Captain 97 — Carolinas Dock Rock"
-        className="brand-logo"
-      />
+      <img src="/captain97-logo.webp" alt="Captain 97 — Carolinas Dock Rock" className="brand-logo" />
     </Link>
   );
 }
@@ -49,6 +45,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <Logo />
               <p>WXNR-LP · New Bern, North Carolina</p>
               <p className="muted">Smooth classics, coastal favorites and Carolina&apos;s Dock Rock.</p>
+              <p><strong>Studio:</strong><br/>1423 South Glenburnie Road, Suite C<br/>New Bern, NC 28562</p>
+              <p><strong>Station:</strong> <a href="tel:+12526756100">252-675-6100</a></p>
             </div>
             <div>
               <h3>Explore</h3>
@@ -61,25 +59,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               <div className="social-row"><a href="https://www.facebook.com/p/Captain-97-61566324394330/">Facebook</a><a href="https://www.instagram.com/captain97radio/">Instagram</a></div>
             </div>
           </div>
-          <div className="footer-bottom">© 2026 Captain 97.1 · WXNR-LP · New Bern, NC</div>
+          <div className="footer-bottom">© 2026 Captain 97.1 · WXNR-LP · 1423 South Glenburnie Road, Suite C · New Bern, NC 28562 · 252-675-6100</div>
         </footer>
 
         <section id="listen" className="player-dock" aria-label="Captain 97 live player">
-          <div className="player-copy">
-            <span className="live-dot" />
-            <strong>LIVE</strong>
-            <span>Captain 97.1</span>
-            <small>Carolina&apos;s Dock Rock · New Bern</small>
-          </div>
+          <div className="player-copy"><span className="live-dot" /><strong>LIVE</strong><span>Captain 97.1</span><small>Carolina&apos;s Dock Rock · New Bern</small></div>
           <div className="compact-player">
-            <audio
-              controls
-              preload="none"
-              aria-label="Listen live to Captain 97.1"
-              src="https://streaming.live365.com/a57695"
-            >
-              Your browser does not support live audio playback.
-            </audio>
+            <audio controls preload="none" aria-label="Listen live to Captain 97.1" src="https://streaming.live365.com/a57695">Your browser does not support live audio playback.</audio>
             <a href="https://live365.com/station/Captain-97-a57695" target="_blank" rel="noreferrer" className="live365-link">LIVE365 ↗</a>
           </div>
         </section>
