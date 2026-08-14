@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
+import './player-fix.css';
 
 export const metadata: Metadata = {
   title: "Captain 97.1 | Carolina's Dock Rock",
