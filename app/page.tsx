@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import OnAirNow from './OnAirNow';
 
 export default function HomePage() {
   return (
@@ -19,14 +20,7 @@ export default function HomePage() {
             <div className="frequency-lockup"><strong>97.1</strong><span>FM<br/>NEW BERN</span></div>
           </div>
 
-          <div className="radio-card">
-            <div className="radio-card-top"><span className="live-badge">● ON AIR</span><span>WXNR-LP</span></div>
-            <div className="album-art official-art">
-              <img src="/captain97-logo.webp" alt="Captain 97 — Carolinas Dock Rock" className="album-brand-logo" />
-            </div>
-            <div className="now-playing-preview"><small>NOW PLAYING</small><strong>Live from New Bern</strong><span>Tap play below to start the stream</span></div>
-            <a href="#listen" className="big-play" aria-label="Jump to live player">▶</a>
-          </div>
+          <OnAirNow />
         </div>
       </section>
 
