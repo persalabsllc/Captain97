@@ -1,0 +1,22 @@
+/* Compact persistent radio player overrides */
+body{padding-bottom:82px}
+.player-dock{height:82px;grid-template-columns:250px minmax(0,1fr);padding:0 24px;gap:22px;background:#101226;overflow:hidden}
+.player-copy{padding-left:0;min-width:0}
+.compact-player{display:flex;align-items:center;gap:16px;min-width:0;width:100%}
+.compact-player audio{display:block;width:min(640px,100%);height:46px;min-width:180px}
+.live365-link{font-size:10px;font-weight:900;letter-spacing:1.2px;color:#8f97ae;white-space:nowrap}
+.player-dock iframe{display:none!important}
+@media(max-width:980px){
+  body{padding-bottom:78px}
+  .player-dock{height:78px;grid-template-columns:170px minmax(0,1fr);padding:0 14px;gap:12px}
+  .compact-player{gap:8px}
+  .compact-player audio{height:42px}
+}
+@media(max-width:640px){
+  body{padding-bottom:74px}
+  .player-dock{height:74px;display:block;padding:14px 12px}
+  .player-copy{display:none}
+  .compact-player{height:46px}
+  .compact-player audio{width:100%;height:44px}
+  .live365-link{display:none}
+}
