@@ -1,0 +1,40 @@
+/* Official Captain 97 logo presentation */
+.logo.official-logo {
+  display: flex;
+  align-items: center;
+  min-width: 140px;
+  line-height: 1;
+}
+.logo.official-logo .brand-logo {
+  display: block;
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+}
+.footer .logo.official-logo {
+  width: 160px;
+  margin-bottom: 22px;
+}
+.footer .logo.official-logo .brand-logo {
+  width: 160px;
+}
+.album-art.official-art {
+  background: linear-gradient(180deg,#ffe9a3 0 42%,#55b0b6 42% 67%,#2d5c73 67%);
+  padding: 24px;
+}
+.album-art.official-art::after {
+  display: none;
+}
+.album-brand-logo {
+  position: relative;
+  z-index: 2;
+  width: 84%;
+  height: auto;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.16));
+}
+@media(max-width:640px){
+  .logo.official-logo {min-width:120px; transform:none}
+  .logo.official-logo .brand-logo {width:120px}
+  .footer .logo.official-logo .brand-logo {width:140px}
+  .album-brand-logo {width:90%}
+}
