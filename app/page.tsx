@@ -42,12 +42,13 @@ export default function HomePage() {
             <p>Listen on <strong>97.1 FM</strong> around New Bern or stream Captain 97 anywhere online.</p>
             <a href="#listen" className="text-link">Start listening →</a>
           </div>
-          <div className="coastal-card">
-            <div className="coastal-sky" />
-            <div className="coastal-sun" />
-            <div className="coastal-water" />
-            <div className="coastal-boat">⛵</div>
-            <blockquote>“Tune in and let the rhythm of dock rock transport you to your happy place.”</blockquote>
+          <div className="coastal-card coverage-card">
+            <img
+              className="coverage-map-image"
+              src="https://i0.wp.com/captain97.com/wp-content/uploads/2024/10/Coverage-Map.png?resize=1000%2C998&ssl=1"
+              alt="WXNR-LP Captain 97.1 FM coverage map"
+            />
+            <div className="coverage-map-label"><small>97.1 FM · NEW BERN</small><strong>WXNR Coverage Map</strong></div>
           </div>
         </div>
       </section>
