@@ -62,15 +62,23 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </footer>
 
         <section id="listen" className="player-dock" aria-label="Captain 97 live player">
-          <div className="player-copy"><span className="live-dot" /> <strong>LIVE</strong><span>Captain 97.1</span><small>Carolina&apos;s Dock Rock</small></div>
-          <iframe
-            title="Captain 97 Live365 player"
-            src="https://live365.com/embeds/v1/player/a57695?c=mp3&m=dark&s=sm"
-            width="100%"
-            height="115"
-            frameBorder="0"
-            allow="autoplay"
-          />
+          <div className="player-copy">
+            <span className="live-dot" />
+            <strong>LIVE</strong>
+            <span>Captain 97.1</span>
+            <small>Carolina&apos;s Dock Rock · New Bern</small>
+          </div>
+          <div className="compact-player">
+            <audio
+              controls
+              preload="none"
+              aria-label="Listen live to Captain 97.1"
+              src="https://streaming.live365.com/a57695"
+            >
+              Your browser does not support live audio playback.
+            </audio>
+            <a href="https://live365.com/station/Captain-97-a57695" target="_blank" rel="noreferrer" className="live365-link">LIVE365 ↗</a>
+          </div>
         </section>
       </body>
     </html>
