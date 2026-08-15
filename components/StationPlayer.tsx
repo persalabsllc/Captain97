@@ -12,6 +12,7 @@ import {
 } from 'react';
 import { siteConfig } from '@/lib/site';
 import Icon from './Icon';
+import { NowPlayingProvider, useNowPlaying } from './NowPlayingProvider';
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
 
@@ -139,13 +140,17 @@ const statusCopy: Record<PlayerStatus, string> = {
 
 export function PlayerDock() {
   const { isPlaying, status, toggle } = useStationPlayer();
+  const { snapshot, stale } = useNowPlaying();
+  const currentTrack = stale ? null : snapshot?.current;
+  const nextTrack = stale ? null : snapshot?.upNext[0];
 
   return (
     <section id="listen" className="player-dock" aria-label="Captain 97 live player" data-player-status={status}>
-      <div className="player-station-copy player-now">
+      <div className="player-station-copy player-now" aria-live="polite" aria-atomic="true">
         <span className="status-dot live-dot" aria-hidden="true" />
-        <span className="player-live-line player-kicker">LIVE · WXNR-LP</span>
-        <strong>Captain 97.1</strong>
+        <span className="player-live-line player-kicker">{currentTrack ? 'NOW PLAYING' : 'LIVE'} · WXNR-LP</span>
+        <strong>{currentTrack?.title || 'Captain 97.1'}</strong>
+        <small>{currentTrack?.artist || "Carolina's Dock Rock"}</small>
       </div>
 
       <div className="player-dock-actions player-controls">
@@ -161,16 +166,29 @@ export function PlayerDock() {
         <span className="player-status" aria-live="polite">{statusCopy[status]}</span>
       </div>
 
-      <a className="player-live365-link player-fallback" href={siteConfig.live365Url} target="_blank" rel="noreferrer">
-        Live365 <Icon name="external-link" size={14} />
-      </a>
+      <div className="player-dock-end">
+        {nextTrack ? (
+          <div className="player-up-next">
+            <small>Coming up</small>
+            <strong>{nextTrack.title || 'More Dock Rock'}</strong>
+            <span>{nextTrack.artist || 'Captain 97.1'}</span>
+          </div>
+        ) : null}
+        <a className="player-live365-link player-fallback" href={siteConfig.live365Url} target="_blank" rel="noreferrer">
+          Live365 <Icon name="external-link" size={14} />
+        </a>
+      </div>
     </section>
   );
 }
 
 /** Convenience wrapper for layouts that want the provider and dock in one component. */
 export function StationPlayerProvider({ children }: { children: ReactNode }) {
-  return <AudioProvider>{children}<PlayerDock /></AudioProvider>;
+  return (
+    <AudioProvider>
+      <NowPlayingProvider>{children}<PlayerDock /></NowPlayingProvider>
+    </AudioProvider>
+  );
 }
 
 export default StationPlayerProvider;
