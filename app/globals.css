@@ -1882,6 +1882,219 @@ p {
   max-width: 620px;
 }
 
+.expense-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.5fr);
+  align-items: end;
+  gap: 64px;
+}
+
+.expense-overview .section-heading {
+  margin-bottom: 0;
+}
+
+.expense-total {
+  display: grid;
+  min-height: 250px;
+  align-content: center;
+  padding: 38px;
+}
+
+.expense-total span {
+  color: #a8ded0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.expense-total strong {
+  margin: 16px 0 7px;
+  color: var(--yellow);
+  font-family: var(--serif);
+  font-size: clamp(60px, 7vw, 88px);
+  letter-spacing: -0.065em;
+  line-height: 0.9;
+}
+
+.expense-total small {
+  color: rgba(240, 247, 250, 0.72);
+  font-size: 13px;
+}
+
+.expense-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 44px;
+  margin-top: 50px;
+  padding: 18px 42px 0;
+  overflow: hidden;
+}
+
+.expense-breakdown > * {
+  position: relative;
+  z-index: 1;
+}
+
+.expense-row {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.expense-row-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.expense-row-heading span {
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.expense-row-heading strong {
+  color: var(--teal);
+  font-family: var(--serif);
+  font-size: 23px;
+}
+
+.expense-track {
+  height: 5px;
+  margin-top: 13px;
+  overflow: hidden;
+  background: rgba(17, 23, 46, 0.07);
+  border-radius: 999px;
+}
+
+.expense-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--green-bright), var(--yellow));
+  border-radius: inherit;
+  box-shadow: 0 0 16px rgba(104, 183, 121, 0.3);
+}
+
+.expense-breakdown-total {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 8px -42px 0;
+  padding: 28px 42px;
+  color: var(--white);
+  background: linear-gradient(120deg, var(--navy-deep), var(--indigo));
+}
+
+.expense-breakdown-total span {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.expense-breakdown-total strong {
+  color: var(--yellow);
+  font-family: var(--serif);
+  font-size: 34px;
+  letter-spacing: -0.035em;
+}
+
+.supporter-perks-section {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 8% 86%, rgba(104, 183, 121, 0.13), transparent 30%),
+    var(--cream);
+}
+
+.supporter-perks {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+  align-items: center;
+  gap: 64px;
+  padding: 64px;
+}
+
+.supporter-perks h2 {
+  max-width: 650px;
+  margin-bottom: 24px;
+  font-size: clamp(44px, 5.4vw, 70px);
+}
+
+.supporter-perks-copy > p {
+  max-width: 680px;
+  font-size: 17px;
+  line-height: 1.85;
+}
+
+.supporter-perks-copy .supporter-perks-note {
+  margin: 26px 0 0;
+  padding-left: 18px;
+  color: rgba(240, 247, 250, 0.67);
+  border-left: 3px solid var(--yellow);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.supporter-perk-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.supporter-perk-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.07);
+}
+
+.supporter-perk-icon {
+  display: grid;
+  width: 66px;
+  height: 66px;
+  place-items: center;
+  color: var(--navy-deep);
+  background: var(--yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(255, 216, 77, 0.22);
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.supporter-perk-icon.on-air {
+  color: var(--white);
+  background: var(--teal);
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.supporter-perk-card strong,
+.supporter-perk-card small {
+  display: block;
+}
+
+.supporter-perk-card strong {
+  margin-bottom: 4px;
+  color: var(--white);
+  font-family: var(--serif);
+  font-size: 22px;
+}
+
+.supporter-perk-card small {
+  color: rgba(240, 247, 250, 0.67);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .donation-note h3 {
   font-size: 30px;
 }
@@ -3073,8 +3286,19 @@ p {
 
   .calendar-layout,
   .donation-layout,
-  .contact-grid {
+  .contact-grid,
+  .expense-overview,
+  .supporter-perks {
     grid-template-columns: 1fr;
+  }
+
+  .expense-overview,
+  .supporter-perks {
+    gap: 40px;
+  }
+
+  .expense-total {
+    max-width: 620px;
   }
 
   .calendar-submit-card,
@@ -3328,6 +3552,46 @@ p {
 
   .donation-amount-custom {
     grid-column: 1 / -1;
+  }
+
+  .expense-breakdown {
+    grid-template-columns: 1fr;
+    padding: 10px 24px 0;
+  }
+
+  .expense-breakdown-total {
+    margin-inline: -24px;
+    padding: 24px;
+  }
+
+  .expense-breakdown-total span {
+    max-width: 170px;
+    font-size: 10px;
+  }
+
+  .expense-breakdown-total strong {
+    font-size: 30px;
+  }
+
+  .supporter-perks {
+    padding: 38px 24px;
+  }
+
+  .supporter-perks h2 {
+    font-size: clamp(42px, 13vw, 58px);
+  }
+
+  .supporter-perks-copy > p {
+    font-size: 15px;
+  }
+
+  .supporter-perk-card {
+    grid-template-columns: 1fr;
+  }
+
+  .supporter-perk-icon {
+    width: 58px;
+    height: 58px;
   }
 
   .calendar-compass {

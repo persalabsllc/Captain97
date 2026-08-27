@@ -38,7 +38,7 @@ const statusContent = {
   paid: {
     eyebrow: 'Payment complete',
     title: "We're grateful to have you aboard.",
-    copy: 'Stripe will send your payment receipt to the email address entered at checkout. Thank you for supporting local radio in New Bern.',
+    copy: 'Stripe will send your payment receipt by email, and Captain 97 will follow up to arrange your complimentary T-shirt and studio invitation. Thank you for supporting local radio in New Bern.',
   },
   pending: {
     eyebrow: 'Payment processing',

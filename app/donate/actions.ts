@@ -114,9 +114,30 @@ export async function createDonationCheckout(
             unit_amount: amountInCents,
             product_data: {
               name: 'Support Captain 97.1',
-              description: 'One-time support for WXNR-LP local broadcasting and streaming.',
+              description: 'One-time support for WXNR-LP local broadcasting and streaming, including Captain 97 supporter perks.',
             },
           },
+        },
+      ],
+      custom_fields: [
+        {
+          key: 'shirt_size',
+          label: {
+            type: 'custom',
+            custom: 'Captain 97 T-shirt size',
+          },
+          type: 'dropdown',
+          dropdown: {
+            options: [
+              { label: 'Small', value: 'small' },
+              { label: 'Medium', value: 'medium' },
+              { label: 'Large', value: 'large' },
+              { label: 'XL', value: 'xl' },
+              { label: '2XL', value: '2xl' },
+              { label: '3XL', value: '3xl' },
+            ],
+          },
+          optional: false,
         },
       ],
       success_url: `${baseUrl}/donate/thank-you?session_id={CHECKOUT_SESSION_ID}`,
@@ -138,7 +159,7 @@ export async function createDonationCheckout(
       },
       custom_text: {
         submit: {
-          message: 'Thank you for helping keep local radio broadcasting and streaming from New Bern.',
+          message: 'Thank you for helping keep local radio on the air. Captain 97 will email you to arrange your complimentary T-shirt and studio invitation.',
         },
       },
     });
