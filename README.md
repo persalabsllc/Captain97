@@ -43,7 +43,7 @@ Live message polling runs only while the relevant page is visible. When a listen
 
 ## Contact form
 
-The public `/contact` form posts to the same-origin `/api/contact` route, which validates every field, rejects cross-origin requests, uses a honeypot and Redis-backed throttling, and then relays the message to `kyle@captain97.com` through FormSubmit. The first production submission triggers FormSubmit's one-time activation email; confirm that message before relying on the form for public inquiries. Contact messages are not written to Redis or another application database.
+The public `/contact` form posts to the same-origin `/api/contact` route, which validates every field, rejects cross-origin requests, uses a honeypot and Redis-backed throttling, and then sends the message to `kyle@captain97.com` through Resend. Configure the server-only `RESEND_API_KEY` through the Vercel Marketplace integration and verify `captain97.com` in Resend. The sender defaults to `Captain 97 Website <website@captain97.com>`; set `CONTACT_FROM_EMAIL` only if a different verified sender is needed. Replies are addressed directly to the visitor. Contact messages are not written to Redis or another application database.
 
 ## Quality checks
 
