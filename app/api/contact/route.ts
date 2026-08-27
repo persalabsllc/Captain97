@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { Resend } from 'resend';
 import { consumeChatRateLimit } from '@/lib/chat-store';
 import {
   isSameOriginMutation,
@@ -13,6 +12,7 @@ export const runtime = 'nodejs';
 
 const CONTACT_RECIPIENT = 'kyle@captain97.com';
 const DEFAULT_CONTACT_SENDER = 'Captain 97 Website <website@captain97.com>';
+const RESEND_EMAILS_URL = 'https://api.resend.com/emails';
 
 const CONTACT_REASONS = {
   'music-request': 'Music request',
@@ -190,25 +190,34 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from: process.env.CONTACT_FROM_EMAIL || DEFAULT_CONTACT_SENDER,
-      to: CONTACT_RECIPIENT,
-      replyTo: parsed.value.email,
-      subject: `Captain 97 website: ${reasonLabel}`,
-      text: [
-        `Reason: ${reasonLabel}`,
-        `Name: ${parsed.value.name}`,
-        `Phone: ${parsed.value.phone}`,
-        `Email: ${parsed.value.email}`,
-        '',
-        parsed.value.message,
-      ].join('\n'),
-      html: contactEmailHtml(parsed.value, reasonLabel),
+    const response = await fetch(RESEND_EMAILS_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.CONTACT_FROM_EMAIL || DEFAULT_CONTACT_SENDER,
+        to: [CONTACT_RECIPIENT],
+        reply_to: parsed.value.email,
+        subject: `Captain 97 website: ${reasonLabel}`,
+        text: [
+          `Reason: ${reasonLabel}`,
+          `Name: ${parsed.value.name}`,
+          `Phone: ${parsed.value.phone}`,
+          `Email: ${parsed.value.email}`,
+          '',
+          parsed.value.message,
+        ].join('\n'),
+        html: contactEmailHtml(parsed.value, reasonLabel),
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(12_000),
     });
 
-    if (error) {
-      throw new Error(`Resend rejected contact delivery: ${error.message}`);
+    if (!response.ok) {
+      const result = await response.json().catch(() => null) as { message?: string } | null;
+      throw new Error(`Resend rejected contact delivery (${response.status}): ${result?.message ?? 'unknown error'}`);
     }
 
     return NextResponse.json({ accepted: true }, {
