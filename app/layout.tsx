@@ -1,8 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { NowPlayingProvider } from '@/components/NowPlayingProvider';
-import { AudioProvider, PlayerDock } from '@/components/StationPlayer';
-import SiteFooter from '@/components/SiteFooter';
-import SiteHeader from '@/components/SiteHeader';
+import SiteShell from '@/components/SiteShell';
 import { siteConfig } from '@/lib/site';
 import './globals.css';
 
@@ -69,14 +66,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en">
       <body>
         <a className="skip-link" href="#main-content">Skip to main content</a>
-        <AudioProvider>
-          <NowPlayingProvider>
-            <SiteHeader />
-            {children}
-            <SiteFooter />
-            <PlayerDock />
-          </NowPlayingProvider>
-        </AudioProvider>
+        <SiteShell>{children}</SiteShell>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </body>
     </html>

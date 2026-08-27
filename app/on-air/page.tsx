@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import Icon from '@/components/Icon';
 import OnAirNow from '@/components/OnAirNow';
 import PageHero from '@/components/PageHero';
 import { ListenButton } from '@/components/StationPlayer';
@@ -30,7 +32,10 @@ export default function OnAirPage() {
               Our live stream keeps Carolina&apos;s Dock Rock within reach from the first
               cup of coffee to the last light on the water.
             </p>
-            <ListenButton className="btn btn-primary">Listen live</ListenButton>
+            <div className="page-cta-actions">
+              <ListenButton className="btn btn-primary">Listen live</ListenButton>
+              <Link className="btn btn-outline" href="/chat"><Icon name="message" size={17} />Chat with the DJ</Link>
+            </div>
           </div>
           <div className="on-air-stage premium-panel">
             <OnAirNow />
