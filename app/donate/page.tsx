@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import DonationCheckout from '@/components/DonationCheckout';
 import PageHero from '@/components/PageHero';
-import { siteConfig } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: 'Support Captain 97.1',
@@ -34,18 +33,11 @@ export default function DonatePage() {
               <div className="eyebrow">Support Captain 97</div>
               <h2 id="donation-heading">Every contribution keeps local radio moving.</h2>
               <p>
-                To make a contribution today, call or contact the station. We&apos;ll help
-                you choose the best way to support Captain 97 and answer any questions
-                about how listener support keeps WXNR-LP moving.
+                Make a one-time contribution to support Captain 97.1&apos;s community radio
+                programming and operating costs. Choose an amount below, then finish on
+                Stripe&apos;s secure checkout.
               </p>
-              <div className="donation-actions">
-                <a className="btn btn-light" href={siteConfig.phone.href}>
-                  Call {siteConfig.phone.display}
-                </a>
-                <Link className="btn btn-ghost" href="/contact#support-inquiry">
-                  Contact the station
-                </Link>
-              </div>
+              <DonationCheckout />
             </div>
           </article>
 
