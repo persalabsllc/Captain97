@@ -41,6 +41,10 @@ The shared studio session uses a secure, HTTP-only cookie and remains signed in 
 
 Live message polling runs only while the relevant page is visible. When a listener is no longer online, the **Email listener** button opens the email account configured on the studio computer with a prefilled follow-up. Automated outbound email is intentionally not implied because this project does not currently have a transactional email provider.
 
+## Contact form
+
+The public `/contact` form posts to the same-origin `/api/contact` route, which validates every field, rejects cross-origin requests, uses a honeypot and Redis-backed throttling, and then sends the message to `kyle@captain97.com` through Resend. Configure the server-only `RESEND_API_KEY` through the Vercel Marketplace integration and verify `captain97.com` in Resend. The sender defaults to `Captain 97 Website <website@captain97.com>`; set `CONTACT_FROM_EMAIL` only if a different verified sender is needed. Replies are addressed directly to the visitor. Contact messages are not written to Redis or another application database.
+
 ## Quality checks
 
 Run the same checks used by continuous integration before opening or merging a pull request:
