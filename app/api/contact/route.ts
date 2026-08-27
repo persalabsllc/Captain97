@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { Resend } from 'resend';
 import { consumeChatRateLimit } from '@/lib/chat-store';
 import {
   isSameOriginMutation,
@@ -10,7 +11,8 @@ import {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const CONTACT_DELIVERY_URL = 'https://formsubmit.co/ajax/kyle@captain97.com';
+const CONTACT_RECIPIENT = 'kyle@captain97.com';
+const DEFAULT_CONTACT_SENDER = 'Captain 97 Website <website@captain97.com>';
 
 const CONTACT_REASONS = {
   'music-request': 'Music request',
@@ -117,6 +119,46 @@ function errorResponse(message: string, status: number) {
   });
 }
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;',
+  })[character] ?? character);
+}
+
+function contactEmailHtml(contact: ParsedContact, reasonLabel: string) {
+  const rows = [
+    ['Reason', reasonLabel],
+    ['Name', contact.name],
+    ['Phone', contact.phone],
+    ['Email', contact.email],
+  ].map(([label, value]) => `
+    <tr>
+      <th style="padding:10px 14px;text-align:left;vertical-align:top;color:#0b3744;background:#eaf7f6;border-bottom:1px solid #d3e4e3;">${escapeHtml(label)}</th>
+      <td style="padding:10px 14px;color:#182b35;border-bottom:1px solid #d3e4e3;">${escapeHtml(value)}</td>
+    </tr>`).join('');
+
+  return `<!doctype html>
+  <html lang="en">
+    <body style="margin:0;padding:24px;background:#f4f1e8;font-family:Arial,sans-serif;color:#182b35;">
+      <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #d3e4e3;border-radius:14px;overflow:hidden;">
+        <div style="padding:22px 24px;background:#0b3744;color:#ffffff;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#72d7cf;">Captain 97.1</div>
+          <h1 style="margin:6px 0 0;font-size:23px;line-height:1.25;">New website message</h1>
+        </div>
+        <div style="padding:22px 24px;">
+          <table role="presentation" style="width:100%;border-collapse:collapse;border:1px solid #d3e4e3;border-radius:8px;overflow:hidden;">${rows}</table>
+          <h2 style="margin:24px 0 8px;font-size:16px;color:#0b3744;">Message</h2>
+          <div style="padding:16px;background:#f8faf9;border-left:4px solid #f2c94c;border-radius:4px;white-space:pre-wrap;line-height:1.6;">${escapeHtml(contact.message)}</div>
+        </div>
+      </div>
+    </body>
+  </html>`;
+}
+
 export async function POST(request: NextRequest) {
   if (!isSameOriginMutation(request)) {
     return errorResponse('This message could not be verified.', 403);
@@ -141,36 +183,32 @@ export async function POST(request: NextRequest) {
   }
 
   const reasonLabel = CONTACT_REASONS[parsed.value.reason];
-  const delivery = new FormData();
-  delivery.set('name', parsed.value.name);
-  delivery.set('phone', parsed.value.phone);
-  delivery.set('email', parsed.value.email);
-  delivery.set('reason', reasonLabel);
-  delivery.set('message', parsed.value.message);
-  delivery.set('_replyto', parsed.value.email);
-  delivery.set('_subject', `Captain 97 website: ${reasonLabel}`);
-  delivery.set('_template', 'table');
-  delivery.set('_captcha', 'false');
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('RESEND_API_KEY is not configured for the Captain 97 contact form.');
+    return errorResponse('The station inbox is temporarily unavailable. Please try again shortly.', 503);
+  }
 
   try {
-    const response = await fetch(CONTACT_DELIVERY_URL, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        Origin: 'https://captain97.com',
-        Referer: 'https://captain97.com/contact',
-      },
-      body: delivery,
-      cache: 'no-store',
-      signal: AbortSignal.timeout(12_000),
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: process.env.CONTACT_FROM_EMAIL || DEFAULT_CONTACT_SENDER,
+      to: CONTACT_RECIPIENT,
+      replyTo: parsed.value.email,
+      subject: `Captain 97 website: ${reasonLabel}`,
+      text: [
+        `Reason: ${reasonLabel}`,
+        `Name: ${parsed.value.name}`,
+        `Phone: ${parsed.value.phone}`,
+        `Email: ${parsed.value.email}`,
+        '',
+        parsed.value.message,
+      ].join('\n'),
+      html: contactEmailHtml(parsed.value, reasonLabel),
     });
-    const result = await response.json().catch(() => null) as {
-      success?: boolean | string;
-    } | null;
 
-    const delivered = result?.success === true || result?.success === 'true';
-    if (!response.ok || !delivered) {
-      throw new Error(`Contact delivery returned ${response.status}.`);
+    if (error) {
+      throw new Error(`Resend rejected contact delivery: ${error.message}`);
     }
 
     return NextResponse.json({ accepted: true }, {
