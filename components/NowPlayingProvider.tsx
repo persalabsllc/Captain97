@@ -53,16 +53,30 @@ export function NowPlayingProvider({ children }: { children: ReactNode }) {
   }, [updateLocalStaleness]);
 
   useEffect(() => {
-    const initialRefresh = window.setTimeout(() => void refresh(), 0);
-    const timer = window.setInterval(() => void refresh(), NOW_PLAYING_POLL_INTERVAL_MS);
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') void refresh();
+    let timer: number | undefined;
+
+    const stopPolling = () => {
+      if (timer === undefined) return;
+      window.clearInterval(timer);
+      timer = undefined;
     };
+
+    const startPolling = () => {
+      stopPolling();
+      void refresh();
+      timer = window.setInterval(() => void refresh(), NOW_PLAYING_POLL_INTERVAL_MS);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') startPolling();
+      else stopPolling();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    handleVisibilityChange();
 
     return () => {
-      window.clearTimeout(initialRefresh);
-      window.clearInterval(timer);
+      stopPolling();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [refresh]);
