@@ -41,6 +41,10 @@ The shared studio session uses a secure, HTTP-only cookie and remains signed in 
 
 Live message polling runs only while the relevant page is visible. When a listener is no longer online, the **Email listener** button opens the email account configured on the studio computer with a prefilled follow-up. Automated outbound email is intentionally not implied because this project does not currently have a transactional email provider.
 
+## Contact form
+
+The public `/contact` form posts to the same-origin `/api/contact` route, which validates every field, rejects cross-origin requests, uses a honeypot and Redis-backed throttling, and then relays the message to `kyle@captain97.com` through FormSubmit. The first production submission triggers FormSubmit's one-time activation email; confirm that message before relying on the form for public inquiries. Contact messages are not written to Redis or another application database.
+
 ## Quality checks
 
 Run the same checks used by continuous integration before opening or merging a pull request:
