@@ -10,14 +10,17 @@ export const metadata: Metadata = {
 };
 
 type DonationStatus = 'paid' | 'pending' | 'invalid' | 'unavailable';
+type DonationFrequency = 'monthly' | 'one_time';
 
 type DonationThankYouPageProps = {
   searchParams: Promise<{ session_id?: string | string[] }>;
 };
 
-async function getDonationStatus(sessionId: string | string[] | undefined): Promise<DonationStatus> {
+async function getDonationStatus(
+  sessionId: string | string[] | undefined,
+): Promise<{ status: DonationStatus; frequency: DonationFrequency }> {
   if (typeof sessionId !== 'string' || !/^cs_(?:test|live)_[A-Za-z0-9]+$/.test(sessionId)) {
-    return 'invalid';
+    return { status: 'invalid', frequency: 'one_time' };
   }
 
   try {
@@ -26,11 +29,17 @@ async function getDonationStatus(sessionId: string | string[] | undefined): Prom
       session.metadata?.source === 'captain97_donate_page' &&
       session.metadata.station === 'WXNR-LP';
 
-    if (!belongsToCaptain97 || session.status !== 'complete') return 'invalid';
-    return session.payment_status === 'paid' ? 'paid' : 'pending';
+    if (!belongsToCaptain97 || session.status !== 'complete') {
+      return { status: 'invalid', frequency: 'one_time' };
+    }
+
+    return {
+      status: session.payment_status === 'paid' ? 'paid' : 'pending',
+      frequency: session.metadata?.frequency === 'monthly' ? 'monthly' : 'one_time',
+    };
   } catch (error) {
     console.error('Unable to verify Captain 97 donation checkout.', error);
-    return 'unavailable';
+    return { status: 'unavailable', frequency: 'one_time' };
   }
 }
 
@@ -59,8 +68,11 @@ const statusContent = {
 
 export default async function DonationThankYouPage({ searchParams }: DonationThankYouPageProps) {
   const { session_id: sessionId } = await searchParams;
-  const status = await getDonationStatus(sessionId);
+  const { status, frequency } = await getDonationStatus(sessionId);
   const content = statusContent[status];
+  const copy = status === 'paid' && frequency === 'monthly'
+    ? 'Your monthly support is active. Stripe will send your receipt by email, and Captain 97 will follow up to arrange your complimentary T-shirt and studio invitation. Thank you for helping keep local radio strong every month.'
+    : content.copy;
 
   return (
     <main id="main-content" className="inner-page page-donate">
@@ -77,7 +89,7 @@ export default async function DonationThankYouPage({ searchParams }: DonationTha
             <div>
               <div className="eyebrow">{content.eyebrow}</div>
               <h2>{content.title}</h2>
-              <p>{content.copy}</p>
+              <p>{copy}</p>
               <div className="donation-actions">
                 {status === 'paid' || status === 'pending' ? (
                   <>
