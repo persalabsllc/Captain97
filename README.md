@@ -17,7 +17,9 @@ npm run dev
 
 Then open <http://localhost:3000>.
 
-The now-playing integration requires an Upstash Redis database connected through Vercel and a private StationPlaylist update token. See `.env.example` for the required variable names. Keep credentials and provider secrets in Vercel project settings; never commit them to the repository or expose server-only secrets through `NEXT_PUBLIC_` variables.
+The now-playing integration requires an Upstash Redis database connected through Vercel and a private StationPlaylist update token. The donation checkout requires the server-only secret key from a dedicated Captain 97 Stripe account. See `.env.example` for the required variable names. Keep credentials and provider secrets in Vercel project settings; never commit them to the repository or expose server-only secrets through `NEXT_PUBLIC_` variables.
+
+Stripe Checkout is created server-side after the donor chooses a suggested or custom amount on `/donate`. Configure `STRIPE_SECRET_KEY` for Preview and Production, enable successful-payment receipt emails in Stripe, and set the Captain 97 logo, public business details, and card statement descriptor in that Stripe account. Do not reuse a Stripe account belonging to an independently operated website or business; the account identity appears on receipts and card statements.
 
 StationPlaylist Studio Pro sends current and upcoming track metadata to `/api/now-playing/update` at every track change. The public `/api/now-playing` route returns the latest safe snapshot for the site player. The update route is authenticated and must never be used without `STATIONPLAYLIST_UPDATE_TOKEN` configured.
 

@@ -14,7 +14,7 @@ const contentSecurityPolicy = [
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  "form-action 'self' https://checkout.stripe.com",
   "frame-ancestors 'self'",
   ...(isDevelopment ? [] : ['upgrade-insecure-requests']),
 ].join('; ');
