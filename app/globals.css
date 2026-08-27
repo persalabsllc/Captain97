@@ -1704,6 +1704,74 @@ p {
   text-transform: uppercase;
 }
 
+.donation-frequency-fieldset {
+  margin-bottom: 20px;
+}
+
+.donation-frequency-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.donation-frequency-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.donation-frequency-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.donation-frequency-option > span {
+  display: grid;
+  min-height: 78px;
+  align-content: center;
+  gap: 4px;
+  padding: 14px 16px;
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: 14px;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.donation-frequency-option strong {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.donation-frequency-option small {
+  color: rgba(240, 247, 250, 0.76);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.donation-frequency-option:hover > span {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.donation-frequency-option input:checked + span {
+  color: var(--navy-deep);
+  background: var(--yellow);
+  border-color: var(--yellow);
+  box-shadow: 0 11px 28px rgba(255, 216, 77, 0.2);
+}
+
+.donation-frequency-option input:checked + span small {
+  color: rgba(8, 20, 51, 0.72);
+}
+
+.donation-frequency-option input:focus-visible + span {
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+
 .donation-amount-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
