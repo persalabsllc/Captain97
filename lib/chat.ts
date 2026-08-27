@@ -174,8 +174,8 @@ export function parsePasswordChangeInput(body: unknown): Parsed<{
     return { ok: false, message: 'Complete both password fields.' };
   }
 
-  if (newPassword.length < 14) {
-    return { ok: false, message: 'Use at least 14 characters for the new password.' };
+  if (newPassword.length < 12) {
+    return { ok: false, message: 'Use at least 12 characters for the new password.' };
   }
 
   return { ok: true, value: { currentPassword, newPassword } };

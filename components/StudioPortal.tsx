@@ -728,12 +728,12 @@ export default function StudioPortal() {
               </label>
               <label>
                 <span>New password</span>
-                <input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={14} autoComplete="new-password" required />
-                <small>Use at least 14 characters.</small>
+                <input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength={12} autoComplete="new-password" required />
+                <small>Use at least 12 characters.</small>
               </label>
               <label>
                 <span>Confirm new password</span>
-                <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={14} autoComplete="new-password" required />
+                <input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={12} autoComplete="new-password" required />
               </label>
               {passwordError ? <p className="studio-error" role="alert">{passwordError}</p> : null}
               <button className="btn btn-primary" type="submit" disabled={pending}>{pending ? 'Updating…' : 'Update shared password'}</button>
