@@ -49,6 +49,7 @@ export type SiteConfig = {
 
 export const navigation = [
   { label: 'On Air', href: '/on-air' },
+  { label: 'Chat with the DJ', href: '/chat' },
   { label: "Captain's Calendar", href: '/captains-calendar' },
   { label: 'Underwriting', href: '/underwriting' },
   { label: 'Donate', href: '/donate' },

@@ -33,6 +33,14 @@ https://captain97.com/api/now-playing/update?token=TOKEN_GOES_HERE&artist=%a&tit
 
 The request is sent at the start of each eligible track. The threshold on the Now Playing Parameters tab keeps short sweepers and jingles from replacing song metadata; tracks marked as songs are always included.
 
+## Chat with the DJ
+
+The public `/chat` page provides a private listener-to-studio conversation. Messages, unread state, and the studio availability heartbeat use the same Upstash Redis connection as now-playing metadata. The private `/studio` page contains one shared inbox account for the studio computer; it does not create or manage individual DJ users.
+
+The shared studio session uses a secure, HTTP-only cookie and remains signed in for 30 days. Configure the launch verifier with the private Vercel environment variables `STUDIO_INITIAL_PASSWORD_SALT` and `STUDIO_INITIAL_PASSWORD_HASH`, then change the launch password from inside the studio console after the first sign-in. Changing it revokes older studio sessions. The **Available now** switch is backed by a short heartbeat, so the public page automatically falls back to **Taking messages** if the studio console closes or the computer sleeps.
+
+Live message polling runs only while the relevant page is visible. When a listener is no longer online, the **Email listener** button opens the email account configured on the studio computer with a prefilled follow-up. Automated outbound email is intentionally not implied because this project does not currently have a transactional email provider.
+
 ## Quality checks
 
 Run the same checks used by continuous integration before opening or merging a pull request:

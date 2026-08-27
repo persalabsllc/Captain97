@@ -4,6 +4,7 @@ import { siteConfig } from '@/lib/site';
 const routes = [
   { path: '', changeFrequency: 'weekly', priority: 1 },
   { path: '/on-air', changeFrequency: 'weekly', priority: 0.9 },
+  { path: '/chat', changeFrequency: 'monthly', priority: 0.9 },
   { path: '/captains-calendar', changeFrequency: 'daily', priority: 0.9 },
   { path: '/underwriting', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/donate', changeFrequency: 'monthly', priority: 0.8 },
