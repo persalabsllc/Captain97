@@ -6464,3 +6464,422 @@ body:has(.studio-shell)::before {
     transition: none;
   }
 }
+
+/* Light, high-legibility presentation for the private monitoring console. */
+.monitoring-page {
+  color: #17212b;
+  color-scheme: light;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(71, 167, 151, 0.11), transparent 29%),
+    radial-gradient(circle at 3% 35%, rgba(255, 216, 77, 0.13), transparent 25%),
+    #f5f7f9;
+}
+
+.monitoring-page :focus-visible {
+  outline-color: #14786f;
+}
+
+.monitoring-loading-page p {
+  color: #536170;
+}
+
+.monitoring-login-page .studio-login-card {
+  color: #17212b;
+  background: rgba(255, 255, 255, 0.97);
+  border-color: #dce3e8;
+  box-shadow: 0 28px 80px rgba(27, 44, 58, 0.15);
+}
+
+.monitoring-login-page .studio-login-card .brand-mark-light {
+  background: #fff;
+  border-color: #e2e7eb;
+  box-shadow: 0 14px 34px rgba(30, 49, 64, 0.1);
+}
+
+.monitoring-login-page .studio-kicker {
+  color: #14786f;
+}
+
+.monitoring-login-page .studio-login-card h1 {
+  color: #111820;
+}
+
+.monitoring-login-page .studio-login-card > p {
+  color: #5a6876;
+}
+
+.monitoring-login-page .studio-login-card label > span {
+  color: #354453;
+}
+
+.monitoring-login-page .studio-login-card input {
+  color: #17212b;
+  background: #fff;
+  border-color: #cfd8df;
+}
+
+.monitoring-login-page .studio-error {
+  color: #8f2925 !important;
+  background: #fff1ef;
+  border-color: #f1c7c2;
+}
+
+.monitoring-topbar {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-color: #dce3e8;
+  box-shadow: 0 10px 30px rgba(29, 46, 61, 0.09);
+}
+
+.monitoring-brand-group .brand-mark-light {
+  background: #fff;
+  border-color: #e0e6ea;
+  box-shadow: 0 8px 24px rgba(28, 46, 61, 0.09);
+}
+
+.monitoring-brand-group > div:last-child {
+  border-left-color: #d7dfe5;
+}
+
+.monitoring-brand-group span,
+.monitoring-overview-copy > span,
+.monitor-panel-heading > div > span,
+.monitor-audio-card-heading > div > span,
+.monitor-track-card > span,
+.monitor-up-next > span,
+.monitor-listener-kpi > span,
+.monitor-metric-grid article > span,
+.monitor-rds-readout span,
+.monitor-console-source span {
+  color: #14786f;
+}
+
+.monitoring-brand-group strong,
+.monitoring-overview-copy h1,
+.monitor-panel-heading h2,
+.monitor-audio-card-heading h3,
+.monitor-track-card h3,
+.monitor-metric-grid article > strong,
+.monitor-control-list strong,
+.monitoring-setup-note strong {
+  color: #111820;
+}
+
+.monitoring-topbar-actions > button {
+  color: #334352;
+  background: #f7f9fa;
+  border-color: #d7e0e6;
+}
+
+.monitoring-topbar-actions > button:hover {
+  color: #0d5e57;
+  background: #edf7f5;
+  border-color: #abd5cd;
+}
+
+.monitoring-freshness > span:last-child {
+  color: #5e6b78;
+}
+
+.monitoring-overview-copy,
+.monitoring-status-grid,
+.monitor-panel,
+.monitoring-setup-note {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: #dce3e8;
+  box-shadow: 0 18px 46px rgba(31, 49, 64, 0.08), inset 0 1px #fff;
+}
+
+.monitoring-overview-copy p,
+.monitor-panel-heading > p,
+.monitor-heading-status small,
+.monitor-audio-card > p,
+.monitor-audio-card-footer small,
+.monitor-track-card p,
+.monitor-track-card small,
+.monitor-up-next small,
+.monitor-empty-copy,
+.monitor-listener-kpi > small,
+.monitor-metric-grid article > small,
+.monitor-panel-note,
+.monitor-control-summary span,
+.monitor-control-list > .is-disabled > div:nth-child(2) span,
+.monitor-control-notice,
+.monitor-automation-note,
+.monitoring-setup-note span {
+  color: #596776;
+}
+
+.monitoring-overview-copy p,
+.monitor-panel-heading > p {
+  font-size: 13px;
+}
+
+.monitoring-status-item {
+  border-right-color: #e1e6ea;
+}
+
+.monitoring-status-item strong {
+  color: #1c2732;
+}
+
+.monitoring-status-item small {
+  color: #5f6d7b;
+  font-size: 12px;
+}
+
+.monitor-status-badge {
+  color: #4f5d6b;
+  background: #f1f4f6;
+  border-color: #d8e0e5;
+  font-size: 10px;
+}
+
+.monitor-status-badge i {
+  background: #75828f;
+}
+
+.monitor-status-badge.is-online {
+  color: #24683b;
+  background: #ebf8ef;
+  border-color: #bfe3c9;
+}
+
+.monitor-status-badge.is-connecting {
+  color: #12685f;
+  background: #eaf7f5;
+  border-color: #b9ded8;
+}
+
+.monitor-status-badge.is-ready,
+.monitor-status-badge.is-degraded,
+.monitor-status-badge.is-stale {
+  color: #705800;
+  background: #fff8d9;
+  border-color: #e9d477;
+}
+
+.monitor-status-badge.is-offline {
+  color: #9a302b;
+  background: #fff0ee;
+  border-color: #edc0bb;
+}
+
+.monitor-status-badge.is-not_configured,
+.monitor-status-badge.is-unknown {
+  color: #596674;
+}
+
+.monitoring-alert {
+  color: #8d2b27;
+  background: #fff1ef;
+  border-color: #efc5c0;
+  font-size: 12px;
+}
+
+.monitor-audio-card,
+.monitor-metric-grid article,
+.monitor-control-list > .monitor-control-card,
+.monitor-control-list > div {
+  color: #1f2c37;
+  background: #f8fafb;
+  border-color: #dde4e9;
+}
+
+.monitor-audio-card.is-active {
+  background: linear-gradient(145deg, #edf9f6, #fff9df);
+  border-color: #d3b832;
+  box-shadow: 0 0 0 1px rgba(211, 184, 50, 0.08), 0 15px 34px rgba(27, 96, 85, 0.1);
+}
+
+.monitor-audio-card > p,
+.monitor-audio-card-footer small,
+.monitor-panel-note,
+.monitor-control-notice,
+.monitor-automation-note {
+  font-size: 12px;
+}
+
+.monitor-meter-row > strong,
+.monitor-meter-row output {
+  color: #485867;
+  font-size: 10px;
+}
+
+.monitor-meter-track {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 7px, rgba(255, 255, 255, 0.88) 7px 9px),
+    #dbe2e6;
+  box-shadow: inset 0 0 0 1px rgba(50, 67, 79, 0.06);
+}
+
+.monitor-meter-track::after {
+  background: repeating-linear-gradient(90deg, transparent 0 7px, rgba(255, 255, 255, 0.82) 7px 9px);
+}
+
+.monitor-meter-scale {
+  color: #71808d;
+  font-size: 8px;
+}
+
+.monitor-source-button {
+  min-height: 42px;
+  color: #1d554f;
+  background: #fff;
+  border-color: #cbd9db;
+  font-size: 12px;
+}
+
+.is-active .monitor-source-button {
+  color: #101820;
+  background: #ffd84d;
+  border-color: #d7b628;
+}
+
+.monitor-console-strip {
+  background: #f0f5f5;
+  border-top-color: #d7e1e3;
+}
+
+.monitor-console-source {
+  color: #14786f;
+}
+
+.monitor-console-source strong {
+  color: #17212b;
+  font-size: 12px;
+}
+
+.monitor-console-controls > button {
+  color: #273744;
+  background: #fff;
+  border-color: #ccd8de;
+}
+
+.monitor-console-controls label span {
+  color: #52616e;
+  font-size: 11px;
+}
+
+.monitor-console-controls input[type="range"] {
+  accent-color: #14786f;
+}
+
+.monitor-console-state {
+  color: #12685f;
+  font-size: 11px;
+}
+
+.monitor-track-card {
+  background: linear-gradient(145deg, #eaf7f4, #fffaf0);
+  border-color: #cce4de;
+}
+
+.monitor-track-card p,
+.monitor-track-card small {
+  color: #536271;
+}
+
+.monitor-up-next {
+  border-bottom-color: #e0e6ea;
+}
+
+.monitor-up-next > div {
+  border-top-color: #e5eaed;
+}
+
+.monitor-up-next b {
+  color: #246f63;
+  background: #edf5f3;
+}
+
+.monitor-up-next strong {
+  color: #26333f;
+}
+
+.monitor-listener-kpi > strong {
+  color: #12685f;
+}
+
+.monitor-listener-kpi > a {
+  color: #12685f;
+}
+
+.monitor-rds-readout {
+  background: #edf7f5;
+  border-color: #c9e1dc;
+}
+
+.monitor-rds-readout > div + div {
+  border-color: #cbdedb;
+}
+
+.monitor-rds-readout strong {
+  color: #155e57;
+}
+
+.monitor-control-list > .monitor-control-card:hover {
+  background: #eef8f6;
+  border-color: #badbd4;
+}
+
+.monitor-control-list > .is-disabled {
+  color: #667482;
+}
+
+.monitor-control-actions a,
+.monitor-control-actions button {
+  min-height: 38px;
+  color: #155f57;
+  background: #fff;
+  border-color: #ccd9de;
+  font-size: 11px;
+}
+
+.monitor-control-actions a:hover,
+.monitor-control-actions button:hover:not(:disabled) {
+  color: #0f514b;
+  background: #eaf7f4;
+  border-color: #abd4cc;
+}
+
+.monitor-control-actions button {
+  color: #17212b;
+  background: #ffd84d;
+  border-color: #d7b628;
+}
+
+.monitor-control-actions button.is-unavailable {
+  color: #667482;
+  background: #f1f4f6;
+  border-color: #d8e0e5;
+}
+
+.monitor-control-notice {
+  color: #24683b;
+}
+
+.monitor-control-list strong {
+  font-size: 12px;
+}
+
+.monitor-control-summary span,
+.monitor-control-list > .is-disabled > div:nth-child(2) span,
+.monitoring-setup-note span {
+  font-size: 11px;
+}
+
+.monitoring-setup-note {
+  background: linear-gradient(110deg, #fffdf4, #f4faf8);
+}
+
+@media (max-width: 820px) {
+  .monitoring-status-item:nth-child(-n + 2) {
+    border-bottom-color: #e1e6ea;
+  }
+}
+
+@media (max-width: 560px) {
+  .monitor-rds-readout > div + div {
+    border-top-color: #cbdedb;
+  }
+}
