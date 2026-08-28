@@ -181,11 +181,12 @@ export function parseMonitoringTelemetry(value: unknown): ParseResult {
 
   const sources: Partial<Record<MonitoringSourceId, MonitoringSourceTelemetry>> = {};
   if (!isRecord(value.sources)) {
-    return { ok: false, message: 'A complete audio source snapshot is required.' };
+    return { ok: false, message: 'An audio source snapshot object is required.' };
   }
   for (const id of MONITORING_SOURCE_IDS) {
+    if (!Object.hasOwn(value.sources, id)) continue;
     const source = parseSource(value.sources[id]);
-    if (!source) return { ok: false, message: `${id} audio telemetry is required and must be valid.` };
+    if (!source) return { ok: false, message: `${id} audio telemetry must be valid when supplied.` };
     sources[id] = source;
   }
 
