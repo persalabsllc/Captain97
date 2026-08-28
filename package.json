@@ -13,7 +13,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck"
+    "check:agent": "node --test station-agent/*.test.mjs",
+    "check": "npm run lint && npm run typecheck && npm run check:agent"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.2",

@@ -1,0 +1,15 @@
+{
+  "transmitterHost": "192.168.1.11",
+  "snmpPort": 161,
+  "snmpCommunity": "REPLACE_DURING_INSTALL",
+  "snmpTimeoutMs": 2000,
+  "pollIntervalSeconds": 10,
+  "ingestUrl": "https://www.captain97.com/api/monitoring/ingest",
+  "ingestToken": "REPLACE_DURING_INSTALL",
+  "rds": {
+    "enabled": true,
+    "port": 7005,
+    "timeoutMs": 2000
+  },
+  "logPath": "C:\\ProgramData\\Captain97\\StationAgent\\station-agent.log"
+}
