@@ -566,7 +566,7 @@ export default function MonitoringDashboard() {
     label: string,
   ) {
     const confirmed = window.confirm(
-      `Generate a new ${label.toLowerCase()} update now? This creates a new file, but it will not replace what is currently scheduled on air.`,
+      `Send a new ${label.toLowerCase()} generation request now? The upstream system does not confirm completion, and this will not replace what is currently scheduled on air.`,
     );
     if (!confirmed) return;
 
@@ -584,9 +584,9 @@ export default function MonitoringDashboard() {
         setError(result.message ?? `${label} generation could not be started.`);
         return;
       }
-      setControlNotice(result.message ?? `${label} generation completed.`);
+      setControlNotice(result.message ?? `${label} generation request accepted.`);
     } catch {
-      setError(`${label} generation could not be reached. Check the latest script before trying again.`);
+      setError(`${label} generation could not be verified. Wait five minutes and check the latest script before trying again.`);
     } finally {
       setGenerationPending(null);
     }
@@ -637,7 +637,7 @@ export default function MonitoringDashboard() {
     items.push(...missingControls);
     const unprotectedGenerators = snapshot.controls
       .filter((control) => control.id !== 'live365' && !control.generationConfigured)
-      .map((control) => `${control.id} generation protection`);
+      .map((control) => `${control.id} generation trigger`);
     items.push(...unprotectedGenerators);
     return items;
   }, [snapshot]);
@@ -907,21 +907,21 @@ export default function MonitoringDashboard() {
               <article>
                 <span>Total modulation</span>
                 <strong>{formatMetric(snapshot?.transmitter?.modulationPercent, '%')}</strong>
-                <small>Off-air modulation monitor</small>
+                <small>Reported peak deviation</small>
               </article>
             </div>
             <div className="monitor-rds-readout">
               <div>
-                <span>RDS Program Service</span>
+                <span>Transmitter RDS Program Service</span>
                 <strong>{snapshot?.transmitter?.programService || '—'}</strong>
               </div>
               <div>
-                <span>RDS RadioText</span>
+                <span>Transmitter RDS RadioText</span>
                 <strong>{snapshot?.transmitter?.radioText || 'No decoded RDS data'}</strong>
               </div>
             </div>
             {!snapshot?.transmitter ? (
-              <p className="monitor-panel-note">Connect the transmitter or modulation monitor to the station agent to populate these verified readings. Missing values are intentionally shown as dashes—not zero.</p>
+              <p className="monitor-panel-note">Connect the read-only VS300 station agent or a modulation monitor to populate these readings. Transmitter RDS reflects the encoder setting, not independent off-air reception. Missing values are intentionally shown as dashes—not zero.</p>
             ) : null}
           </section>
 
@@ -971,16 +971,16 @@ export default function MonitoringDashboard() {
                             control.id === 'news' ? 'News' : 'Weather',
                           )}
                         >
-                          {generationPending === control.id ? 'Generating…' : 'Generate new'}
+                          {generationPending === control.id ? 'Sending…' : 'Generate new'}
                         </button>
                       ) : (
                         <button
                           type="button"
                           className="is-unavailable"
                           disabled
-                          title="The upstream generator must require a private server credential before this control can be enabled."
+                          title="A server-side generation trigger must be configured before this control can be enabled."
                         >
-                          Secure trigger pending
+                          Trigger not configured
                         </button>
                       )}
                     </div>
@@ -1000,7 +1000,7 @@ export default function MonitoringDashboard() {
               ))}
             </div>
             {controlNotice ? <p className="monitor-control-notice" role="status">{controlNotice}</p> : null}
-            <p className="monitor-automation-note">Manual generation enables after the upstream triggers require a private server credential. Once enabled, it creates a candidate file without replacing the update currently scheduled on air and enforces a five-minute cooldown.</p>
+            <p className="monitor-automation-note">Manual generation sends a server-side request after confirmation and enforces a five-minute cooldown for each update type. The upstream system does not confirm completion, so verify the latest script or audio afterward. A request does not replace the update currently scheduled on air.</p>
           </section>
         </div>
 

@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { consumeChatRateLimit, resetChatRateLimit } from '@/lib/chat-store';
+import { consumeChatRateLimit } from '@/lib/chat-store';
 import { isSameOriginMutation } from '@/lib/chat-request';
 import {
   isMonitoringAutomationAction,
   isMonitoringAutomationId,
-  monitoringAutomationCredential,
   monitoringAutomationUrl,
 } from '@/lib/monitoring-config';
 import type { MonitoringAutomationId } from '@/lib/monitoring';
@@ -137,7 +136,6 @@ export async function POST(
     return errorResponse('This generation request could not be verified.', 403);
   }
 
-  let consumedCooldown: MonitoringAutomationId | null = null;
   try {
     const session = await readStudioSession(request);
     if (!session) return errorResponse('Sign in to start a generation.', 401);
@@ -145,9 +143,8 @@ export async function POST(
     const route = await readRoute(context);
     if (!route || route.action !== 'generate') return errorResponse('Control not found.', 404);
     const destination = monitoringAutomationUrl(route.automation, 'generate');
-    const credential = monitoringAutomationCredential(route.automation);
-    if (!destination || !credential) {
-      return errorResponse('This generation control is awaiting a protected upstream endpoint.', 404);
+    if (!destination) {
+      return errorResponse('This generation control is not configured.', 404);
     }
 
     const limited = await consumeChatRateLimit(
@@ -159,48 +156,25 @@ export async function POST(
     if (limited) {
       return errorResponse('A generation was already started recently. Wait five minutes before trying again.', 429);
     }
-    consumedCooldown = route.automation;
-
     const upstream = await fetch(destination, {
+      method: 'GET',
       cache: 'no-store',
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${credential}`,
+        Accept: 'text/plain, */*',
       },
       redirect: 'error',
       signal: AbortSignal.timeout(50_000),
     });
     if (!upstream.ok) throw new Error(`Generator returned ${upstream.status}.`);
-    const upstreamBody = await readBoundedText(upstream, 64_000);
-    let confirmation: unknown;
-    try {
-      confirmation = JSON.parse(upstreamBody);
-    } catch {
-      throw new Error('Generator did not return a JSON confirmation.');
-    }
-    if (
-      !confirmation
-      || typeof confirmation !== 'object'
-      || Array.isArray(confirmation)
-      || !('ok' in confirmation)
-      || confirmation.ok !== true
-    ) {
-      throw new Error('Generator did not confirm success.');
-    }
-    consumedCooldown = null;
+    if (upstream.body) await readBoundedText(upstream, 64_000);
 
     const label = route.automation === 'news' ? 'News' : 'Weather';
     return NextResponse.json({
       ok: true,
-      message: `${label} generation completed. It created a new file but did not replace the item currently scheduled on air.`,
-    }, { headers: privateHeaders });
-  } catch (error) {
-    if (consumedCooldown) {
-      await resetChatRateLimit('monitoring-ai-generation', consumedCooldown).catch((resetError) => {
-        console.error('Unable to release failed monitoring generation cooldown.', resetError);
-      });
-    }
-    console.error('Unable to start monitoring automation generation.', error);
-    return errorResponse('The generator did not confirm completion. Check the latest script before trying again.', 503);
+      message: `${label} generation request accepted. The upstream generator does not confirm completion, so check the latest script or audio shortly. This does not replace the item currently scheduled on air.`,
+    }, { status: 202, headers: privateHeaders });
+  } catch {
+    console.error('Unable to verify monitoring automation generation request.');
+    return errorResponse('The dashboard could not verify that the generator accepted the request. Wait five minutes and check the latest script before trying again.', 503);
   }
 }

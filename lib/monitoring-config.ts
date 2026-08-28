@@ -219,13 +219,6 @@ export function monitoringAutomationUrl(
   return allowedOrigins.has(url.origin.toLowerCase()) ? url.toString() : null;
 }
 
-export function monitoringAutomationCredential(id: MonitoringAutomationId) {
-  const credential = id === 'news'
-    ? process.env.MONITORING_NEWS_GENERATE_TOKEN
-    : process.env.MONITORING_WEATHER_GENERATE_TOKEN;
-  return credential && credential.length >= 32 ? credential : null;
-}
-
 export function monitoringControls(): readonly MonitoringControl[] {
   return (Object.keys(controlDetails) as MonitoringControlId[]).map((id) => {
     if (id !== 'live365') {
@@ -233,7 +226,7 @@ export function monitoringControls(): readonly MonitoringControl[] {
       const archive = monitoringAutomationUrl(id, 'archive');
       const latest = monitoringAutomationUrl(id, 'latest');
       const generate = monitoringAutomationUrl(id, 'generate');
-      const generationConfigured = Boolean(generate && monitoringAutomationCredential(id));
+      const generationConfigured = Boolean(generate);
       const configured = Boolean(audio && archive && latest);
       return {
         id,
