@@ -45,6 +45,39 @@ Live message polling runs only while the relevant page is visible. When a listen
 
 The public `/contact` form posts to the same-origin `/api/contact` route, which validates every field, rejects cross-origin requests, uses a honeypot and Redis-backed throttling, and then sends the message to `kyle@captain97.com` through Resend. The Vercel Marketplace integration provisions the server-only `RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN` variables; verify `captain97.com` in Resend before sending. The sender defaults to `Captain 97 Website <website@captain97.com>`; set `CONTACT_FROM_EMAIL` only if a different verified sender is needed. Replies are addressed directly to the visitor. Contact messages are not written to Redis or another application database.
 
+## Engineering monitoring
+
+The private `/monitoring` workspace reuses the shared studio login and is intentionally absent from public navigation and the sitemap. The page, its API, and its protected outbound control links all require a valid Redis-backed studio session. It includes the StationPlaylist now-playing feed immediately and can monitor configured Barix/STL, off-air, and public Live365 audio with real browser-side stereo meters. Browser playback requires a user gesture and any custom audio feed must be HTTPS, CORS-enabled for `https://captain97.com`, and free of permanent credentials in its URL. Configure the engineering-provided Barix relay as `MONITORING_STL_AUDIO_URL` only after confirming that confidence-monitor connections are capacity-isolated from the operational STL path.
+
+The STL feed, off-air feed, transmitter readings, verified RDS, and listener count are populated by an outbound-only station agent. Send a complete schema-versioned snapshot to `/api/monitoring/ingest` with `Authorization: Bearer <MONITORING_INGEST_TOKEN>`; do not reuse the StationPlaylist token. Each update must include all three audio sources, an explicit transmitter object or `null`, an explicit listener object or `null`, and a current `agentAt` timestamp. A representative payload is:
+
+```json
+{
+  "version": 1,
+  "agentAt": "2026-08-28T16:30:00.000Z",
+  "sources": {
+    "stl": { "connected": true, "leftDbfs": -14.2, "rightDbfs": -13.8, "silence": false },
+    "offair": { "connected": true, "leftDbfs": -15.1, "rightDbfs": -14.7, "silence": false },
+    "stream": { "connected": true, "leftDbfs": -16.4, "rightDbfs": -15.9, "silence": false }
+  },
+  "transmitter": {
+    "connected": true,
+    "forwardPowerWatts": 92.4,
+    "reflectedPowerWatts": 0.7,
+    "modulationPercent": 98.1,
+    "programService": "CAPTN97",
+    "radioText": "Captain 97.1 - Carolina's Dock Rock"
+  },
+  "listeners": { "current": 18 }
+}
+```
+
+All numeric fields are range-checked and RDS text is sanitized before storage. The server reception time determines dashboard freshness, while the signed agent timestamp must be within five minutes and strictly newer than the previous snapshot to reject queued or replayed readings. Missing readings render as dashes and are never presented as zero or healthy. Live365 does not currently publish a supported external current-listener API, so keep the count absent unless a supported provider credential or the station agent can supply it; the page includes a protected link to Live365 Analytics in the meantime.
+
+The news and weather operations cards use Captain 97's public current-audio and archive endpoints by default. Each card can open the latest audio, locate the newest archived text script, and open the complete archive. Manual generation remains visibly disabled until the upstream triggers require a private 32+ character bearer credential, enforce their own rate limit, and return JSON `{\"ok\":true}` only after a new candidate file has been written successfully. Then configure each `MONITORING_*_GENERATE_URL` and matching `MONITORING_*_GENERATE_TOKEN`; the authenticated dashboard POST executes server-side, requires that explicit completion confirmation, and adds a global five-minute cooldown. The credential and raw trigger URL are never returned to the browser. As provided by the upstream system, generating a candidate does not replace the item currently scheduled on air.
+
+The `MONITORING_NEWS_*` and `MONITORING_WEATHER_*` variables can override the current-audio, archive, and protected-generation endpoints. Add server-fetched automation overrides as exact origins in `MONITORING_AUTOMATION_ALLOWED_ORIGINS`; nonstandard ports are part of the origin. If `LIVE365_ANALYTICS_URL` points to a custom hostname, add that exact hostname to `MONITORING_CONTROL_ALLOWED_HOSTS`. Automation URLs reject query strings, userinfo, and fragments. If an audio origin changes, rebuild the deployment so its exact origin is added only to the monitoring page's Content Security Policy.
+
 ## Quality checks
 
 Run the same checks used by continuous integration before opening or merging a pull request:
