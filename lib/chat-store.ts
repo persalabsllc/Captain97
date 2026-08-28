@@ -127,9 +127,7 @@ export async function consumeChatRateLimit(
   windowSeconds: number,
 ) {
   const client = getChatRedis();
-  const safeScope = scope.replace(/[^a-z0-9:-]/gi, '').slice(0, 80);
-  const safeIdentifier = createHash('sha256').update(identifier).digest('hex').slice(0, 32);
-  const key = `${KEY_PREFIX}:rate:${safeScope}:${safeIdentifier}`;
+  const key = chatRateLimitKey(scope, identifier);
   const attempts = await client.eval<string[], number>(
     [
       'local attempts = redis.call("INCR", KEYS[1])',
@@ -143,6 +141,16 @@ export async function consumeChatRateLimit(
   );
 
   return attempts > limit;
+}
+
+function chatRateLimitKey(scope: string, identifier: string) {
+  const safeScope = scope.replace(/[^a-z0-9:-]/gi, '').slice(0, 80);
+  const safeIdentifier = createHash('sha256').update(identifier).digest('hex').slice(0, 32);
+  return `${KEY_PREFIX}:rate:${safeScope}:${safeIdentifier}`;
+}
+
+export async function resetChatRateLimit(scope: string, identifier: string) {
+  await getChatRedis().del(chatRateLimitKey(scope, identifier));
 }
 
 export async function createChatConversation(input: {

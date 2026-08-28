@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { parseStudioLoginInput } from '@/lib/chat';
-import { consumeChatRateLimit } from '@/lib/chat-store';
+import { consumeChatRateLimit, resetChatRateLimit } from '@/lib/chat-store';
 import {
   isSameOriginMutation,
   readJsonBody,
@@ -50,21 +50,38 @@ export async function POST(request: NextRequest) {
   if (!parsed.ok) return errorResponse(parsed.message, 400);
 
   try {
-    const [ipLimited, accountLimited] = await Promise.all([
-      consumeChatRateLimit(
-        'studio-login-ip',
-        requestFingerprint(request),
-        5,
-        15 * 60,
-      ),
-      consumeChatRateLimit('studio-login-account', STUDIO_USERNAME, 25, 15 * 60),
-    ]);
-    if (ipLimited || accountLimited) {
+    const fingerprint = requestFingerprint(request);
+    const ipLimited = await consumeChatRateLimit(
+      'studio-login-ip',
+      fingerprint,
+      5,
+      15 * 60,
+    );
+    if (ipLimited) {
       return errorResponse('Too many attempts. Please wait 15 minutes and try again.', 429);
     }
 
+    if (parsed.value.username.toLowerCase() !== STUDIO_USERNAME) {
+      return errorResponse('That studio username or password is incorrect.', 401);
+    }
+
     const verified = await verifyStudioCredentials(parsed.value.username, parsed.value.password);
-    if (!verified) return errorResponse('That studio username or password is incorrect.', 401);
+    if (!verified) {
+      const accountLimited = await consumeChatRateLimit(
+        'studio-login-account',
+        STUDIO_USERNAME,
+        25,
+        15 * 60,
+      );
+      return accountLimited
+        ? errorResponse('Too many attempts. Please wait 15 minutes and try again.', 429)
+        : errorResponse('That studio username or password is incorrect.', 401);
+    }
+
+    await Promise.all([
+      resetChatRateLimit('studio-login-ip', fingerprint),
+      resetChatRateLimit('studio-login-account', STUDIO_USERNAME),
+    ]);
 
     const token = await createStudioSession(verified.version);
     if (!token) {

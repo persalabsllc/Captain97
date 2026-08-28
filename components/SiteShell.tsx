@@ -10,9 +10,10 @@ import SiteHeader from './SiteHeader';
 export default function SiteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isStudio = pathname === '/studio' || pathname.startsWith('/studio/');
+  const isMonitoring = pathname === '/monitoring' || pathname.startsWith('/monitoring/');
 
-  if (isStudio) {
-    return <div className="studio-shell">{children}</div>;
+  if (isStudio || isMonitoring) {
+    return <div className={`studio-shell${isMonitoring ? ' monitoring-shell' : ''}`}>{children}</div>;
   }
 
   return (
