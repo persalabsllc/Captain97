@@ -157,13 +157,22 @@ function AudioSourceCard({
   busy: boolean;
   onMonitor: () => void;
 }) {
-  const buttonLabel = active && loading
-    ? 'Cancel monitor'
-    : active && playing
-      ? 'Pause monitor'
-      : active
-        ? 'Resume monitor'
-        : 'Monitor source';
+  const buttonLabel = !source.audioUrl
+    ? 'Feed not connected'
+    : active && loading
+      ? 'Cancel monitor'
+      : active && playing
+        ? 'Pause meter + audio'
+        : active
+          ? 'Resume meter + audio'
+          : 'Start meter + audio';
+  const meterMessage = active && playing
+    ? 'Browser playback verified · live stereo meter active.'
+    : !source.audioUrl
+      ? 'No browser audio feed is configured for this source.'
+      : levels.left !== null || levels.right !== null
+        ? source.stateMessage
+        : 'Select Start meter + audio to begin live browser levels.';
   return (
     <article className={`monitor-audio-card${active ? ' is-active' : ''}`}>
       <div className="monitor-audio-card-heading">
@@ -182,7 +191,7 @@ function AudioSourceCard({
         </div>
       </div>
       <div className="monitor-audio-card-footer">
-        <small>{active && playing ? `Live browser meter · ${source.stateMessage}` : source.stateMessage}</small>
+        <small>{meterMessage}</small>
         <button
           type="button"
           className="monitor-source-button"
@@ -380,6 +389,22 @@ export default function MonitoringDashboard() {
       document.removeEventListener('visibilitychange', visibilityChanged);
     };
   }, [authState, loadStatus]);
+
+  useEffect(() => {
+    const pauseHiddenMonitor = () => {
+      if (document.visibilityState !== 'hidden') return;
+      const audio = audioRef.current;
+      if (!audio || (audio.paused && playbackState !== 'loading')) return;
+      audioAttemptRef.current += 1;
+      clearAudioListeners();
+      audio.pause();
+      setPlaybackState('paused');
+      setSourceSwitching(false);
+      setLiveLevels(emptyLevels);
+    };
+    document.addEventListener('visibilitychange', pauseHiddenMonitor);
+    return () => document.removeEventListener('visibilitychange', pauseHiddenMonitor);
+  }, [clearAudioListeners, playbackState]);
 
   useEffect(() => {
     if (authState !== 'signed-in') return;
@@ -733,13 +758,16 @@ export default function MonitoringDashboard() {
           </div>
           <div className="monitoring-status-grid">
             {snapshot?.audioSources.map((source) => {
-              const state = authoritativeSourceState(source, dashboardConnectionLost);
+              const browserVerified = activeSourceId === source.id && playbackState === 'playing';
+              const state = browserVerified && !dashboardConnectionLost
+                ? 'online'
+                : authoritativeSourceState(source, dashboardConnectionLost);
               return (
                 <div className="monitoring-status-item" key={source.id}>
                   <StatusBadge state={state} />
                   <strong>{source.shortLabel}</strong>
-                  <small>{activeSourceId === source.id && playbackState === 'playing'
-                    ? `Browser monitoring · ${source.stateMessage}`
+                  <small>{browserVerified
+                    ? 'Browser playback verified · live meter active.'
                     : dashboardConnectionLost ? 'Dashboard data connection lost.' : source.stateMessage}</small>
                 </div>
               );
@@ -772,7 +800,7 @@ export default function MonitoringDashboard() {
                 <span>Confidence monitoring</span>
                 <h2 id="audio-chain-title">Audio chain</h2>
               </div>
-              <p>Choose one source to hear it. All three meter positions remain visible.</p>
+              <p>Choose Start meter + audio to hear a source and animate its live browser levels. Leaving this tab pauses the selected feed.</p>
             </div>
             <div className="monitor-audio-grid">
               {snapshot?.audioSources.map((source) => {
@@ -784,7 +812,9 @@ export default function MonitoringDashboard() {
                   <AudioSourceCard
                     key={source.id}
                     source={source}
-                    state={authoritativeSourceState(source, dashboardConnectionLost)}
+                    state={active && playbackState === 'playing' && !dashboardConnectionLost
+                      ? 'online'
+                      : authoritativeSourceState(source, dashboardConnectionLost)}
                     levels={levels}
                     active={active}
                     playing={active && playbackState === 'playing'}
