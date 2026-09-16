@@ -41,7 +41,7 @@ export async function sendNext(id?: string) {
     // Recheck opt-outs and pause after reserving and immediately before the external call.
     const current = await readState();
     const prospect = current.prospects.find(p => p.id === reservation.email.prospectId);
-    if (!prospect || !eligible(prospect, current) || (!id && !current.settings.enabled)) {
+    if (!prospect || prospect.email !== reservation.email.to || !eligible(prospect, current) || (!id && !current.settings.enabled)) {
       await changeState(s => { const e = s.emails.find(e => e.id === reservation.email.id); if (e) e.status = 'cancelled'; });
       return 'Sending stopped.';
     }
