@@ -112,14 +112,22 @@ export function mapMembers(data: unknown, category: string): Candidate[] {
 export async function readMapCandidates(category: string): Promise<Candidate[]> {
   const filters = mapFilters[category];
   if (!filters) throw new Error('Choose a listed business category.');
-  const query = '[out:json][timeout:15][maxsize:33554432];area["name"="North Carolina"]["admin_level"="4"]->.state;relation(area.state)["name"="New Bern"]["boundary"="administrative"];map_to_area->.city;('
+  const query = '[out:json][timeout:15][maxsize:33554432];relation["name"="New Bern"]["boundary"="administrative"](35.0,-77.3,35.3,-76.8);map_to_area->.city;('
     + filters.map(f => 'nwr(area.city)["name"]' + f + ';').join('') + ');out tags 1000;';
-  // Fixed provider endpoint: never accepts a caller-controlled URL or query.
-  const response = await fetch('https://overpass.private.coffee/api/interpreter', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Captain97-BusinessResearch/1.0 (+https://captain97.com)' },
-    body: new URLSearchParams({ data: query }), signal: AbortSignal.timeout(25000), redirect: 'error', cache: 'no-store',
-  });
-  if (!response.ok) throw new Error('Map search is temporarily unavailable (' + response.status + ').');
+  // Both public providers permit small projects; cache results and fail over once.
+  // Endpoints and filters are fixed, never caller-controlled.
+  let response: Response | undefined;
+  for (const endpoint of ['https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter']) {
+    try {
+      const result = await fetch(endpoint, {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Captain97-BusinessResearch/1.0 (+https://captain97.com)' },
+        body: new URLSearchParams({ data: query }), signal: AbortSignal.timeout(18000), redirect: 'error', cache: 'no-store',
+      });
+      if (result.ok) { response = result; break; }
+      await result.body?.cancel();
+    } catch { /* Other sources still work if both map providers are unavailable. */ }
+  }
+  if (!response) throw new Error('Map search is temporarily unavailable. Other discovery sources can still be used.');
   const reader = response.body?.getReader(); if (!reader) throw new Error('Map search returned no data.');
   let raw = ''; let bytes = 0; const decoder = new TextDecoder();
   try {

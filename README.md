@@ -151,8 +151,8 @@ visible for manual research. Emails are verified only on the business's own webs
 not copied from map listings. Each prospect retains its discovery attribution and
 contact source separately. Source failures are reported while other sources continue;
 failed listing reads can be retried. Category lists are cached for six hours in Redis.
-Maps use the public Private.coffee Overpass instance without an API key; its
-availability and coverage vary. OpenStreetMap attribution is displayed in the CRM.
+Maps use public VK Maps / Private.coffee Overpass endpoints without an API key;
+their availability and coverage vary. OpenStreetMap attribution is displayed in the CRM.
 Visit New Bern and Downtown New Bern cover selected visitor-facing categories;
 OpenStreetMap and Chamber discovery support all categories in the selector. Public-page fetching validates DNS, pins a public IPv4
 address, rechecks redirects, limits response sizes and times out requests.
