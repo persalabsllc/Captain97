@@ -117,3 +117,49 @@ Do not make experimental changes directly on `main`. Enable GitHub branch protec
 - Station phone: 252-675-6100
 - The security policy deliberately permits the Live365 origin and its current `cdnstream.com` audio delivery hosts. If the streaming provider changes domains, update the Content Security Policy in `next.config.ts` and verify playback in a Preview deployment first.
 - Update `app/sitemap.ts` whenever a public top-level route is added or removed.
+
+## Private outreach CRM
+
+Open `/outreach` (also linked as **Staff login** in the footer) and use the existing
+`studio` account. The CRM shares studio session authentication; its business data
+is kept in a separate, persistent Redis namespace for each deployment environment.
+
+- **Prospects:** find New Bern businesses from public Chamber categories, research
+  their linked websites for published email addresses, add/edit contacts, track
+  radio campaigns, remotes and sponsorship opportunities, notes and follow-up dates.
+- **Emails:** personalized editable drafts, a scheduled queue, individual sends,
+  provider message IDs, failures, uncertain deliveries and cancellations.
+- **Campaigns:** edit three templates, sender/reply address, category, discovery,
+  automatic queueing and a daily cap of 1–50 (default 10). Settings initially pause
+  automation and discovery. Turn them on after reviewing the campaign text.
+- **Export CRM** downloads the complete account history as JSON.
+
+The existing Redis and `RESEND_API_KEY` connections are required. Configure a random
+32+ character **CRON_SECRET** in Vercel Production. `vercel.json` runs the authenticated
+job every 15 minutes; the application sends only Monday–Friday, 9 a.m.–5 p.m. in
+`America/New_York`, including daylight-saving changes. A run sends at most one due
+message. Preview deployments cannot send emails. Manual sends can occur outside
+these hours but obey the daily cap. Discovery researches up to four unseen directory
+businesses per run, restricted to a New Bern postal locality; missing emails remain
+visible for manual research. Public-page fetching validates DNS, pins a public IPv4
+address, rechecks redirects, limits response sizes and times out requests.
+
+Replies go to `kyle@captain97.com` by default; this CRM does not read that mailbox.
+Record replies by changing the prospect stage, which cancels pending emails.
+Follow-up dates are reminders, not automatic follow-up sequences. “Sent” means
+Resend accepted the email, not confirmed inbox delivery or an open. Each message
+includes the station's postal address and a recipient-specific unsubscribe link.
+GET renders a confirmation (avoiding email-scanner opt-outs); POST supports one-click
+unsubscribe and permanently suppresses that address. Queued sends recheck eligibility.
+
+The queue reserves each send using an optimistic Redis transaction and an operation
+lock, and supplies a stable Resend idempotency key. An interrupted or ambiguous send
+is held as **Check delivery** and never retried automatically. Check Resend before
+creating any replacement; rejected messages are marked failed. Data is retained
+without a TTL, with explicit limits of 2,000 prospects and 5,000 email records.
+Do not enable Redis eviction for this data. Exports include suppression history.
+
+Run `npm run check:outreach` for API/authentication, queue, opt-out, daily-cap,
+concurrency, source-validation and Eastern-time tests. These use isolated storage and
+a fake email provider; they never send live email. `npm run lint` and `npm run build`
+verify the application. No outreach credentials or customer data belong in source.

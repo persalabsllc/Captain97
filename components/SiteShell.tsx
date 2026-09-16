@@ -12,7 +12,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
   const isStudio = pathname === '/studio' || pathname.startsWith('/studio/');
   const isMonitoring = pathname === '/monitoring' || pathname.startsWith('/monitoring/');
 
-  if (isStudio || isMonitoring) {
+  if (isStudio || isMonitoring || pathname === '/outreach') {
     return <div className={`studio-shell${isMonitoring ? ' monitoring-shell' : ''}`}>{children}</div>;
   }
 

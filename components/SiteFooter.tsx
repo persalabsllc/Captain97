@@ -44,7 +44,7 @@ export default function SiteFooter() {
       </div>
       <div className="container footer-bottom">
         <span>© {new Date().getFullYear()} Captain 97.1 · WXNR-LP</span>
-        <span>Locally broadcast from New Bern, North Carolina</span>
+        <span>Locally broadcast from New Bern, North Carolina · <Link href="/outreach">Staff login</Link></span>
       </div>
     </footer>
   );

@@ -14,10 +14,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:agent": "node --test station-agent/*.test.mjs",
-    "check": "npm run lint && npm run typecheck && npm run check:agent"
+    "check": "npm run lint && npm run typecheck && npm run check:agent",
+    "check:outreach": "node --import tsx --test tests/outreach.test.ts"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.2",
+    "cheerio": "^1.2.0",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19.0.2",
     "eslint": "^9.39.1",
     "eslint-config-next": "16.0.10",
+    "tsx": "^4.23.13",
     "typescript": "^5.7.2"
   }
 }
