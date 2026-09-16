@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import { randomBytes, createHash } from 'node:crypto';
 import { defaults, sendingWindow, renderTemplate, type Prospect, type Email } from '../lib/outreach/types';
 import { publicIPv4, publicUrl } from '../lib/outreach/public-web';
-import { directoryMembers, publishedEmail } from '../lib/outreach/discovery';
+import { discover, directoryMembers, publishedEmail } from '../lib/outreach/discovery';
 process.env.UPSTASH_REDIS_REST_URL = 'https://redis.outreach.invalid';
 process.env.UPSTASH_REDIS_REST_TOKEN = 'test-only';
 process.env.RESEND_API_KEY = 'test-only';
@@ -38,11 +38,12 @@ globalThis.fetch = async (input, init) => {
   const command = JSON.parse(String(init?.body));
   return Response.json(Array.isArray(command[0]) ? command.map((c: unknown[]) => ({ result: encode(execute(c)) })) : { result: encode(execute(command)) });
 };
+import { CHAT_KEY_PREFIX } from '../lib/chat-store';
 import { changeState, readState, unsubscribe, prefix } from '../lib/outreach/store';
 import { sendNext } from '../lib/outreach/sender';
 import { GET, POST } from '../app/api/outreach/route';
 const cookie = 'test-session-no-production-access';
-const authPrefix = `captain97:listener-chat:v1:${process.env.NODE_ENV || 'development'}`;
+const authPrefix = CHAT_KEY_PREFIX;
 function p(): Prospect { return { id: 'p1', business: 'Test Marina', contact: 'Sam', email: 'sam@example.com', phone: '', website: 'https://example.com', source: 'https://example.com/contact', category: 'Marina', city: 'New Bern', offer: 'radio', stage: 'new', notes: '', emailVerified: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), nextFollowUp: '', value: 0, unsubscribeToken: randomBytes(32).toString('base64url') }; }
 function e(): Email { return { id: 'e1', prospectId: 'p1', to: 'sam@example.com', subject: 'A local partnership', body: 'Hello Sam', status: 'draft', createdAt: new Date().toISOString(), scheduledAt: new Date().toISOString() }; }
 async function seed() { await changeState(s => { s.prospects = [p()]; s.emails = [e()]; }); }
@@ -118,4 +119,92 @@ test('Eastern sending hours respect daylight saving time and weekends', () => {
   assert.equal(sendingWindow(new Date('2026-12-16T13:00:00Z')), false);
   assert.equal(sendingWindow(new Date('2026-12-16T14:00:00Z')), true);
   assert.match(renderTemplate(defaults.templates.radio, { ...p(), contact: '' }).body, /Test Marina team/);
+});
+
+
+import { businessWebsite, collectCandidates, downtownMembers, mapMembers, sameBusiness, visitMembers, type Candidate } from '../lib/outreach/sources';
+function candidate(business: string, provider: Candidate['provider'] = 'visit', website = 'https://local-business.com/'): Candidate {
+  return { business, provider, website, key: provider + ':' + business, source: 'https://visitnewbern.com/eat-drink/downtown/', phone: '', city: 'New Bern', category: 'restaurants' };
+}
+test('tourism parser requires a local address and keeps the business website', () => {
+  const html = '<div class="e-loop-item type-locations e-loop-item-12"><h3>Independent Cafe</h3><div class="elementor-widget-theme-post-content">123 Main St, New Bern, NC 28560 (252) 555-0100 <a href="https://independent-cafe.com/">Visit Website</a></div></div>'
+    + '<div class="e-loop-item type-locations"><h3>Outside Cafe</h3><div class="elementor-widget-theme-post-content">Havelock, NC <a href="https://outside-cafe.com/">Visit Website</a></div></div>';
+  const found = visitMembers(html, 'https://visitnewbern.com/eat-drink/downtown/', 'restaurants');
+  assert.equal(found.length, 1); assert.equal(found[0].key, 'visit:12'); assert.equal(found[0].website, 'https://independent-cafe.com/');
+  assert.equal(found[0].phone, '(252) 555-0100');
+});
+test('downtown listings and maps produce prospects without trusting directory email addresses', () => {
+  const downtown = downtownMembers('<div class="eael-elements-flip-box-container"><h2 class="eael-elements-flip-box-heading">Corner Shop</h2><a href="https://corner-shop.com/">Website</a></div>', 'https://downtownnewbern.com/shop/', 'retail');
+  assert.equal(downtown.length, 1); assert.equal(downtown[0].business, 'Corner Shop');
+  const maps = mapMembers({ elements: [
+    { type: 'node', id: 1, tags: { name: 'Independent Salon', website: 'salon.com', email: 'unverified@salon.com', 'addr:city': 'New Bern' } },
+    { type: 'node', id: 2, tags: { name: 'Other Salon', 'addr:city': 'Havelock' } },
+  ] }, 'personal services');
+  assert.equal(maps.length, 1); assert.equal(maps[0].website, 'https://salon.com/'); assert.equal('email' in maps[0], false);
+  assert.equal(maps[0].source, 'https://www.openstreetmap.org/node/1');
+  assert.throws(() => mapMembers({ elements: [], remark: 'timeout' }, 'retail'), /busy/);
+  assert.equal(businessWebsite('https://facebook.com/shared-listing'), '');
+  assert.equal(businessWebsite('http://127.0.0.1/private'), '');
+});
+test('cross-source duplicates match punctuation, legal suffixes, websites and emails', () => {
+  assert.equal(sameBusiness(candidate("Baker’s Kitchen LLC", 'visit', ''), candidate("Baker's Kitchen", 'chamber', '')), true);
+  assert.equal(sameBusiness(candidate('Long Cafe Name', 'visit', 'https://www.cafe.com/menu'), candidate('Cafe', 'downtown', 'https://cafe.com/')), true);
+  assert.equal(sameBusiness(candidate('First', 'visit', ''), candidate('Second', 'maps', '')), false);
+});
+test('all-source discovery interleaves results, caches them and reports partial failures', async () => {
+  let calls = 0;
+  const loader = async (provider: Candidate['provider']) => {
+    calls++;
+    if (provider === 'maps') throw new Error('Provider timeout');
+    return [candidate(provider + ' one', provider), candidate(provider + ' two', provider)];
+  };
+  const batch = await collectCandidates('restaurants', 'all', loader);
+  assert.deepEqual(batch.candidates.slice(0, 4).map(c => c.provider), ['visit', 'downtown', 'chamber', 'visit']);
+  assert.equal(batch.warnings.length, 1); assert.match(batch.warnings[0], /OpenStreetMap/);
+  await collectCandidates('restaurants', 'all', loader);
+  assert.equal(calls, 5); // Successful lists reused; only the failed source retried.
+  await assert.rejects(collectCandidates('automotive', 'visit', loader), /does not cover/);
+});
+test('broader discovery persists new prospects and source links, deduplicates and honors opt-outs', async () => {
+  await changeState(s => { s.settings.autoQueue = true; s.suppressed.push('optout@business.com'); });
+  const collect = async () => ({ searched: ['Visit New Bern', 'Downtown New Bern'], warnings: [], candidates: [
+    candidate('Independent Cafe', 'visit', 'https://cafe.com'),
+    candidate('Independent Cafe & Bakery', 'downtown', 'https://www.cafe.com/menu'),
+    candidate('No Email Shop', 'maps', 'https://shop.com'),
+    candidate('Opted Out', 'visit', 'https://optout.com'),
+  ] });
+  const research = async (website: string) => ({ source: website + '/contact', email: website.includes('cafe') ? 'hello@cafe.com' : website.includes('optout') ? 'optout@business.com' : '' });
+  const readPage = async () => { throw new Error('No directory details expected.'); };
+  await discover('restaurants', 'all', { collect, research, readPage });
+  const state = await readState();
+  assert.equal(state.prospects.length, 2); assert.equal(state.emails.length, 1); assert.equal(state.emails[0].status, 'queued');
+  const cafe = state.prospects.find(p => p.business === 'Independent Cafe')!;
+  assert.equal(cafe.discoverySource, 'Visit New Bern'); assert.equal(cafe.source, 'https://cafe.com/contact'); assert.ok(cafe.discoveryUrl);
+  assert.equal(state.prospects.find(p => p.business === 'No Email Shop')!.emailVerified, false);
+  await discover('restaurants', 'all', { collect, research, readPage });
+  assert.equal((await readState()).prospects.length, 2); assert.equal((await readState()).emails.length, 1);
+  assert.equal(deliveries.length, 0);
+});
+test('existing settings gain broader discovery without changing sending preferences', async () => {
+  await seed();
+  const state = await readState(); const legacy = JSON.parse(JSON.stringify(state)); delete legacy.settings.discoverySource;
+  legacy.settings.enabled = false; legacy.settings.dailyLimit = 7;
+  database.set(prefix + ':state', JSON.stringify(legacy));
+  const migrated = await readState();
+  assert.equal(migrated.settings.discoverySource, 'all'); assert.equal(migrated.settings.enabled, false); assert.equal(migrated.settings.dailyLimit, 7);
+});
+test('API saves discovery source and rejects invalid search choices', async () => {
+  const result = await POST(request({ action: 'settings', ...defaults, discoverySource: 'visit' }));
+  assert.equal(result.status, 200); assert.equal((await readState()).settings.discoverySource, 'visit');
+  assert.equal((await POST(request({ action: 'discover', category: 'restaurants', source: 'not-a-source' }))).status, 400);
+  assert.equal((await POST(request({ action: 'discover', category: 'invalid-category', source: 'all' }))).status, 400);
+});
+
+test('downtown popup details stay paired with their business across multiple cards', () => {
+  const html = '<main><h2>Directory</h2>'
+    + '<section><div class="flip"><h2 class="eael-elements-flip-box-heading">Cafe One</h2></div><div class="popup"><div><h4>Cafe One</h4></div><p><a href="https://cafe-one.com">Website</a></p></div></section>'
+    + '<section><div class="flip"><h2 class="eael-elements-flip-box-heading">Shop Two</h2></div><div class="popup"><div><h4>Shop Two</h4></div><p><a href="https://shop-two.com">Website</a></p></div></section>'
+    + '<section><h4>No Website</h4></section></main>';
+  const listings = downtownMembers(html, 'https://downtownnewbern.com/shop/', 'retail');
+  assert.deepEqual(listings.map(p => [p.business, p.website]), [['Cafe One', 'https://cafe-one.com/'], ['Shop Two', 'https://shop-two.com/']]);
 });

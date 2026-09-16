@@ -1,17 +1,10 @@
 import { load } from 'cheerio';
 import { randomUUID } from 'node:crypto';
 import { changeState, newToken, readState, withLock } from './store';
-import { emailValid, renderTemplate, type Prospect } from './types';
+import { discoveryCategories, discoverySources, emailValid, renderTemplate, type DiscoverySource, type Prospect } from './types';
 import { publicUrl, readPublicPage } from './public-web';
-const directory = 'https://business.newbernchamber.com/list';
-export function directoryMembers(html: string) {
-  const $ = load(html); const found = new Map<string, string>();
-  $('a[href]').each((_i, el) => {
-    const href = $(el).attr('href') || ''; const name = $(el).text().trim();
-    if (href.startsWith(`${directory}/member/`) && name) found.set(href, name);
-  });
-  return [...found].map(([source, business]) => ({ source, business }));
-}
+import { businessWebsite, collectCandidates, sameBusiness, type DiscoveryBatch, type PageReader } from './sources';
+export { directoryMembers } from './sources';
 export function publishedEmail(html: string) {
   const $ = load(html); const candidates: string[] = [];
   $('a[href^="mailto:"]').each((_i, el) => {
@@ -35,43 +28,55 @@ export async function researchWebsite(website: string) {
   }
   return { email: '', source: first.url };
 }
-export async function discover(category: string) {
+type DiscoveryIO = {
+  collect: (category: string, source: DiscoverySource) => Promise<DiscoveryBatch>;
+  research: typeof researchWebsite;
+  readPage: PageReader;
+};
+export async function discover(category: string, source: DiscoverySource = 'all', io: DiscoveryIO = { collect: collectCandidates, research: researchWebsite, readPage: readPublicPage }) {
+  if (!(discoveryCategories as readonly string[]).includes(category)) throw new Error('Choose a listed business category.');
+  if (!Object.hasOwn(discoverySources, source)) throw new Error('Choose a listed discovery source.');
   return withLock('discovery', async () => {
     const state = await readState();
     if (state.prospects.length >= 2000) throw new Error('The prospect limit is 2,000. Export your CRM before adding more.');
-    const index = await readPublicPage(directory); const $ = load(index.html);
-    const categories = new Map<string, string>();
-    $('a[href]').each((_i, el) => { const href = $(el).attr('href') || ''; if (href.startsWith(`${directory}/ql/`) || href.startsWith(`${directory}/category/`)) categories.set(href, $(el).text().trim()); });
-    const words = category.toLowerCase().split(/\s+/).filter(Boolean);
-    const match = [...categories].find(([url, label]) => words.every(w => `${url} ${label}`.toLowerCase().includes(w)));
-    if (!match) throw new Error('Try a directory category such as restaurants, retail, home, health, automotive, or marina.');
-    const page = await readPublicPage(match[0]);
-    const candidates = directoryMembers(page.html).filter(p => !state.researched.includes(p.source) && !state.prospects.some(old => old.business.toLowerCase() === p.business.toLowerCase())).slice(0, 4);
-    const prospects: Prospect[] = []; const examined: string[] = []; let failed = 0;
-    for (const candidate of candidates) {
+    const batch = await io.collect(category, source);
+    const candidates = batch.candidates.filter((p, i, all) =>
+      !state.researched.includes(p.key) && !state.prospects.some(old => sameBusiness(old, p))
+      && !all.slice(0, i).some(old => sameBusiness(old, p))
+      && !/(^|\.)captain97\.com$/i.test(p.website ? new URL(p.website).hostname : '')
+    ).slice(0, 4);
+    const examined: string[] = []; let failed = 0; let unreadable = 0;
+    const results = await Promise.all(candidates.map(async candidate => {
       try {
-        const detail = await readPublicPage(candidate.source); const d = load(detail.html);
-        const city = d('[itemprop="addressLocality"]').first().text().trim();
-        if (!/^new bern$/i.test(city)) { examined.push(candidate.source); continue; }
-        let website = d('.gz-card-website a[href]').attr('href') || '';
-        try { website = website ? publicUrl(website).href : ''; } catch { website = ''; }
+        let { website, city, phone } = candidate;
+        if (candidate.detail) {
+          const detail = await io.readPage(candidate.source); const d = load(detail.html);
+          city = d('[itemprop="addressLocality"]').first().text().trim();
+          if (!/^new bern$/i.test(city)) { examined.push(candidate.key); return null; }
+          website = businessWebsite(d('.gz-card-website a[href]').attr('href') || '');
+          phone = d('[itemprop="telephone"]').first().text().trim();
+        }
         let research = { email: '', source: candidate.source };
-        if (website && !/(facebook|instagram|linkedin)\.com/i.test(new URL(website).hostname)) {
-          try { research = await researchWebsite(website); } catch { /* visible in CRM as needs an email */ }
+        if (website) {
+          try { research = await io.research(website); } catch { unreadable++; }
         }
         const now = new Date().toISOString();
-        prospects.push({ id: randomUUID(), business: candidate.business, city, contact: '', email: research.email,
-          phone: d('[itemprop="telephone"]').first().text().trim(), website, source: research.email ? research.source : candidate.source,
-          category: match[1], offer: state.settings.defaultOffer, stage: 'new', notes: `Found in the New Bern Chamber directory: ${candidate.source}`,
+        const prospect: Prospect = { id: randomUUID(), business: candidate.business, city, contact: '', email: research.email,
+          phone, website, source: research.email ? research.source : candidate.source,
+          discoverySource: discoverySources[candidate.provider], discoveryUrl: candidate.source,
+          category: candidate.category, offer: state.settings.defaultOffer, stage: 'new',
+          notes: 'Found via ' + discoverySources[candidate.provider] + ': ' + candidate.source,
           emailVerified: Boolean(research.email), createdAt: now, updatedAt: now, nextFollowUp: '', value: 0, unsubscribeToken: newToken(),
-        });
-        examined.push(candidate.source);
-      } catch { failed++; }
-    }
+        };
+        examined.push(candidate.key);
+        return prospect;
+      } catch { failed++; return null; }
+    }));
+    const prospects = results.filter((p): p is Prospect => p !== null);
     return changeState(s => {
       let added = 0; let ready = 0;
       for (const p of prospects) {
-        if (s.prospects.length >= 2000 || s.prospects.some(old => old.business.toLowerCase() === p.business.toLowerCase() || (p.email && old.email === p.email)) || (p.email && s.suppressed.includes(p.email))) continue;
+        if (s.prospects.length >= 2000 || s.prospects.some(old => sameBusiness(old, p)) || (p.email && s.suppressed.includes(p.email))) continue;
         s.prospects.unshift(p); added++; if (p.email) ready++;
         if (p.email && s.emails.length < 5000) {
           const draft = renderTemplate(s.settings.templates[p.offer], p);
@@ -80,7 +85,11 @@ export async function discover(category: string) {
       }
       s.researched = [...new Set([...s.researched, ...examined])];
       s.lastDiscovery = new Date().toISOString();
-      const message = candidates.length ? `Added ${added} New Bern prospects; ${ready} have a published email.${failed ? ` ${failed} websites could not be read.` : ''}` : 'All businesses in this category have been checked. Try another category.';
+      const message = 'Searched ' + batch.searched.join(', ') + '. '
+        + (candidates.length ? 'Added ' + added + ' New Bern prospects; ' + ready + ' have a published email.' : 'No new businesses found in this category. Try another category or source.')
+        + (failed ? ' ' + failed + ' listings could not be read and can be retried.' : '')
+        + (unreadable ? ' ' + unreadable + ' business websites could not be read; those prospects need email research.' : '')
+        + (batch.warnings.length ? ' ' + batch.warnings.join('. ') + '.' : '');
       s.lastResult = message;
       return message;
     });

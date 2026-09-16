@@ -5,7 +5,10 @@ const scope = (process.env.VERCEL_ENV || process.env.NODE_ENV || 'development').
 export const prefix = `captain97:outreach:v1:${scope}`;
 const key = `${prefix}:state`;
 export async function readState(): Promise<State> {
-  return await getChatRedis().get<State>(key) || { revision: 0, prospects: [], emails: [], settings: structuredClone(defaults), suppressed: [], researched: [] };
+  const state = await getChatRedis().get<State>(key);
+  if (!state) return { revision: 0, prospects: [], emails: [], settings: structuredClone(defaults), suppressed: [], researched: [] };
+  state.settings = { ...structuredClone(defaults), ...state.settings };
+  return state;
 }
 // Optimistic transactions preserve edits, opt-outs and send reservations across requests.
 export async function changeState<T>(fn: (state: State) => T): Promise<T> {

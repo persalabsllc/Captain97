@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { readStudioSession } from '@/lib/studio-auth';
 import { isSameOriginMutation, readJsonBody } from '@/lib/chat-request';
 import { changeState, newToken, readState } from '@/lib/outreach/store';
-import { countedToday, eligible, emailValid, offers, renderTemplate, stages, type Offer, type Stage, type Template } from '@/lib/outreach/types';
+import { countedToday, discoveryCategories, discoverySources, eligible, emailValid, offers, renderTemplate, stages, type DiscoverySource, type Offer, type Stage, type Template } from '@/lib/outreach/types';
 import { publicUrl } from '@/lib/outreach/public-web';
 import { discover, researchWebsite } from '@/lib/outreach/discovery';
 import { sendNext } from '@/lib/outreach/sender';
@@ -14,6 +14,7 @@ const json = (data: unknown, status = 200) => NextResponse.json(data, { status, 
 function text(x: unknown, max = 200) { return typeof x === 'string' ? x.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, max) : ''; }
 function line(x: unknown, max = 200) { return text(x, max).replace(/[\r\n]/g, ' '); }
 function url(x: unknown) { const value = text(x, 1000); return value ? publicUrl(value).href : ''; }
+function discoverySource(x: unknown): DiscoverySource { if (x == null || x === '') return 'all'; if (!Object.hasOwn(discoverySources, String(x))) throw new Error('Choose a listed discovery source.'); return x as DiscoverySource; }
 function offer(x: unknown): Offer { return Object.hasOwn(offers, String(x)) ? x as Offer : 'radio'; }
 function date(x: unknown) { const value = text(x, 40); if (!value) return ''; if (!Number.isFinite(Date.parse(value))) throw new Error('Choose a valid date.'); return new Date(value).toISOString(); }
 export async function GET(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     const raw = await readJsonBody(request);
     if (!raw || typeof raw !== 'object') return json({ message: 'Invalid request.' }, 400);
     const input = raw as Record<string, unknown>; const action = input.action;
-    if (action === 'discover') return json({ message: await discover(line(input.category, 80) || 'restaurants') });
+    if (action === 'discover') return json({ message: await discover(line(input.category, 80) || 'restaurants', discoverySource(input.source)) });
     if (action === 'send') return json({ message: await sendNext(line(input.id, 64) || undefined) });
     if (action === 'research') {
       const state = await readState(); const prospect = state.prospects.find(p => p.id === input.id);
@@ -93,6 +94,7 @@ export async function POST(request: NextRequest) {
       }
       if (action === 'settings') {
         const dailyLimit = Number(input.dailyLimit);
+        if (!(discoveryCategories as readonly string[]).includes(String(input.category))) throw new Error('Choose a listed business category.');
         if (!Number.isInteger(dailyLimit) || dailyLimit < 1 || dailyLimit > 50) throw new Error('Choose a daily limit between 1 and 50.');
         const from = line(input.from, 250); const replyTo = line(input.replyTo, 254).toLowerCase();
         const sender = (from.match(/<([^<>]+)>$/)?.[1] || from).toLowerCase();
@@ -105,7 +107,7 @@ export async function POST(request: NextRequest) {
           if (!subject || !body) throw new Error('Each campaign needs a subject and message.');
           s.settings.templates[key] = { subject, body };
         }
-        Object.assign(s.settings, { enabled: input.enabled === true, autoDiscover: input.autoDiscover === true, autoQueue: input.autoQueue === true, dailyLimit, from, replyTo, category: line(input.category, 80) || 'restaurants', defaultOffer: offer(input.defaultOffer) });
+        Object.assign(s.settings, { enabled: input.enabled === true, autoDiscover: input.autoDiscover === true, autoQueue: input.autoQueue === true, dailyLimit, from, replyTo, discoverySource: discoverySource(input.discoverySource), category: line(input.category, 80) || 'restaurants', defaultOffer: offer(input.defaultOffer) });
         return 'Campaign settings saved.';
       }
       if (action === 'pause') { s.settings.enabled = false; return 'Automatic sending paused.'; }

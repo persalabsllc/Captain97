@@ -1,8 +1,12 @@
+export const discoverySources = { all: 'All sources', visit: 'Visit New Bern', downtown: 'Downtown New Bern', maps: 'OpenStreetMap', chamber: 'Chamber of Commerce' } as const;
+export type DiscoverySource = keyof typeof discoverySources;
+export const discoveryCategories = ['restaurants', 'retail', 'home', 'health', 'automotive', 'marina', 'real estate', 'personal services', 'lodging'] as const;
 export const offers = { radio: 'Radio campaign', remote: 'Remote broadcast', sponsorship: 'Sponsorship' } as const;
 export type Offer = keyof typeof offers;
 export const stages = ['new', 'contacted', 'replied', 'meeting', 'proposal', 'won', 'closed', 'unsubscribed'] as const;
 export type Stage = typeof stages[number];
 export type Prospect = {
+  discoverySource?: string; discoveryUrl?: string;
   id: string; business: string; contact: string; email: string; phone: string;
   website: string; source: string; category: string; city: string; offer: Offer;
   stage: Stage; notes: string; emailVerified: boolean; createdAt: string; updatedAt: string;
@@ -17,7 +21,7 @@ export type Email = {
 export type Template = { subject: string; body: string };
 export type Settings = {
   enabled: boolean; autoDiscover: boolean; autoQueue: boolean; dailyLimit: number;
-  category: string; defaultOffer: Offer; from: string; replyTo: string;
+  category: string; discoverySource: DiscoverySource; defaultOffer: Offer; from: string; replyTo: string;
   templates: Record<Offer, Template>;
 };
 export type State = {
@@ -28,7 +32,7 @@ export type State = {
 export type Dashboard = State & { connections: { email: boolean; scheduler: boolean }; todayCount: number };
 export const defaults: Settings = {
   enabled: false, autoDiscover: false, autoQueue: false, dailyLimit: 10,
-  category: 'restaurants', defaultOffer: 'radio',
+  category: 'restaurants', discoverySource: 'all', defaultOffer: 'radio',
   from: 'Kyle at Captain 97.1 <kyle@captain97.com>', replyTo: 'kyle@captain97.com',
   templates: {
     radio: {
