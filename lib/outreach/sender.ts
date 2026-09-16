@@ -66,7 +66,7 @@ export async function runAutomation() {
   if (!state.settings.enabled || !sendingWindow()) return 'Automation is paused or outside weekday sending hours.';
   await changeState(s => { s.lastRun = new Date().toISOString(); });
   if (state.settings.autoDiscover && (!state.lastDiscovery || Date.now() - Date.parse(state.lastDiscovery) > 60 * 60 * 1000)) {
-    try { await discover(state.settings.category); }
+    try { await discover(state.settings.category, state.settings.discoverySource); }
     catch (error) { await changeState(s => { s.lastResult = error instanceof Error ? error.message : 'Prospect research could not finish.'; }); }
   }
   return sendNext();

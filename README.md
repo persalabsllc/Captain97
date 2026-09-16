@@ -124,12 +124,13 @@ Open `/outreach` (also linked as **Staff login** in the footer) and use the exis
 `studio` account. The CRM shares studio session authentication; its business data
 is kept in a separate, persistent Redis namespace for each deployment environment.
 
-- **Prospects:** find New Bern businesses from public Chamber categories, research
+- **Prospects:** find New Bern businesses across Visit New Bern, Downtown New Bern,
+  OpenStreetMap and Chamber listings, choose a source or search all sources, research
   their linked websites for published email addresses, add/edit contacts, track
   radio campaigns, remotes and sponsorship opportunities, notes and follow-up dates.
 - **Emails:** personalized editable drafts, a scheduled queue, individual sends,
   provider message IDs, failures, uncertain deliveries and cancellations.
-- **Campaigns:** edit three templates, sender/reply address, category, discovery,
+- **Campaigns:** edit three templates, sender/reply address, category, discovery source,
   automatic queueing and a daily cap of 1–50 (default 10). Settings initially pause
   automation and discovery. Turn them on after reviewing the campaign text.
 - **Export CRM** downloads the complete account history as JSON.
@@ -139,9 +140,21 @@ The existing Redis and `RESEND_API_KEY` connections are required. Configure a ra
 job every 15 minutes; the application sends only Monday–Friday, 9 a.m.–5 p.m. in
 `America/New_York`, including daylight-saving changes. A run sends at most one due
 message. Preview deployments cannot send emails. Manual sends can occur outside
-these hours but obey the daily cap. Discovery researches up to four unseen directory
-businesses per run, restricted to a New Bern postal locality; missing emails remain
-visible for manual research. Public-page fetching validates DNS, pins a public IPv4
+these hours but obey the daily cap. Discovery researches up to four unseen businesses per run. All sources is the
+new default, including for saved settings without a source preference. Listings
+are interleaved across available sources and deduplicated by normalized business
+name, website host or email; Chamber results remain available as one source.
+Visit New Bern listings require an address in New Bern, Downtown New Bern listings
+cover downtown, and map queries use New Bern's municipal boundary in North Carolina.
+Map addresses explicitly naming another city are excluded. Missing emails remain
+visible for manual research. Emails are verified only on the business's own website,
+not copied from map listings. Each prospect retains its discovery attribution and
+contact source separately. Source failures are reported while other sources continue;
+failed listing reads can be retried. Category lists are cached for six hours in Redis.
+Maps use the public Private.coffee Overpass instance without an API key; its
+availability and coverage vary. OpenStreetMap attribution is displayed in the CRM.
+Visit New Bern and Downtown New Bern cover selected visitor-facing categories;
+OpenStreetMap and Chamber discovery support all categories in the selector. Public-page fetching validates DNS, pins a public IPv4
 address, rechecks redirects, limits response sizes and times out requests.
 
 Replies go to `kyle@captain97.com` by default; this CRM does not read that mailbox.

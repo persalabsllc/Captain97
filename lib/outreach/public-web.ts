@@ -13,13 +13,19 @@ export function publicUrl(raw: string) {
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || (url.port && url.port !== '443') || isIP(url.hostname) || !url.hostname.includes('.') || /\.(local|internal|localhost|test|invalid)$/i.test(url.hostname)) throw new Error('Use a public business website.');
   url.protocol = 'https:'; url.hash = ''; return url;
 }
-export async function readPublicPage(raw: string, redirects = 0): Promise<{ url: string; html: string }> {
+export async function readPublicPage(raw: string, redirects = 0, deadline = Date.now() + 12000): Promise<{ url: string; html: string }> {
   const url = publicUrl(raw);
-  const addresses = await lookup(url.hostname, { family: 4, all: true });
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new Error('The business website timed out.');
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const addresses = await Promise.race([
+    lookup(url.hostname, { family: 4, all: true }),
+    new Promise<never>((_resolve, reject) => { timer = setTimeout(() => reject(new Error('Website lookup timed out.')), remaining); }),
+  ]).finally(() => clearTimeout(timer));
   if (!addresses.length || addresses.some(a => !publicIPv4(a.address))) throw new Error('This website is not publicly reachable.');
   // Pin the validated address to this connection; redirects are checked again.
   const result = await new Promise<{ status: number; location?: string; html: string }>((resolve, reject) => {
-    const req = request(url, { family: 4, signal: AbortSignal.timeout(10000), headers: { 'User-Agent': 'Captain97-BusinessResearch/1.0 (+https://captain97.com)', Accept: 'text/html' }, lookup: (_hostname, _options, cb) => cb(null, addresses[0].address, 4) }, res => {
+    const req = request(url, { family: 4, signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())), headers: { 'User-Agent': 'Captain97-BusinessResearch/1.0 (+https://captain97.com)', Accept: 'text/html' }, lookup: (_hostname, _options, cb) => cb(null, addresses[0].address, 4) }, res => {
       const chunks: Buffer[] = []; let size = 0;
       if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400) { res.resume(); resolve({ status: res.statusCode, location: res.headers.location, html: '' }); return; }
       if (!(res.headers['content-type'] || '').includes('text/html')) { res.resume(); reject(new Error('This link is not a webpage.')); return; }
@@ -28,7 +34,7 @@ export async function readPublicPage(raw: string, redirects = 0): Promise<{ url:
     });
     req.setTimeout(8000, () => req.destroy(new Error('The business website timed out.'))); req.on('error', reject); req.end();
   });
-  if (result.location && redirects < 3) return readPublicPage(new URL(result.location, url).href, redirects + 1);
+  if (result.location && redirects < 3) return readPublicPage(new URL(result.location, url).href, redirects + 1, deadline);
   if (result.status !== 200) throw new Error(`Business website returned ${result.status}.`);
   return { url: url.href, html: result.html };
 }
