@@ -38,11 +38,12 @@ globalThis.fetch = async (input, init) => {
   const command = JSON.parse(String(init?.body));
   return Response.json(Array.isArray(command[0]) ? command.map((c: unknown[]) => ({ result: encode(execute(c)) })) : { result: encode(execute(command)) });
 };
+import { CHAT_KEY_PREFIX } from '../lib/chat-store';
 import { changeState, readState, unsubscribe, prefix } from '../lib/outreach/store';
 import { sendNext } from '../lib/outreach/sender';
 import { GET, POST } from '../app/api/outreach/route';
 const cookie = 'test-session-no-production-access';
-const authPrefix = `captain97:listener-chat:v1:${process.env.NODE_ENV || 'development'}`;
+const authPrefix = CHAT_KEY_PREFIX;
 function p(): Prospect { return { id: 'p1', business: 'Test Marina', contact: 'Sam', email: 'sam@example.com', phone: '', website: 'https://example.com', source: 'https://example.com/contact', category: 'Marina', city: 'New Bern', offer: 'radio', stage: 'new', notes: '', emailVerified: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), nextFollowUp: '', value: 0, unsubscribeToken: randomBytes(32).toString('base64url') }; }
 function e(): Email { return { id: 'e1', prospectId: 'p1', to: 'sam@example.com', subject: 'A local partnership', body: 'Hello Sam', status: 'draft', createdAt: new Date().toISOString(), scheduledAt: new Date().toISOString() }; }
 async function seed() { await changeState(s => { s.prospects = [p()]; s.emails = [e()]; }); }
