@@ -78,13 +78,22 @@ export function visitMembers(html: string, source: string, category: string): Ca
 }
 export function downtownMembers(html: string, source: string, category: string): Candidate[] {
   const $ = load(html); const found: Candidate[] = [];
-  $('.eael-elements-flip-box-container').each((_i, el) => {
-    const card = $(el); const business = card.find('.eael-elements-flip-box-heading').first().text().trim();
-    const links = card.find('a[href]').toArray().map(a => businessWebsite($(a).attr('href') || '')).filter(Boolean);
-    if (!business || !links.length) return;
-    found.push({ key: 'downtown:' + businessName(business), business: business.slice(0, 200), website: links[0],
-      phone: card.text().match(/\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/)?.[0] || '',
-      city: 'New Bern', category, source, provider: 'downtown' });
+  // Business details live in Elementor popups, outside the flip-box front.
+  $('h4, .eael-elements-flip-box-heading').each((_i, el) => {
+    const business = $(el).text().trim();
+    if (!business) return;
+    let card = $(el).parent();
+    for (let level = 0; level < 10 && card.length; level++, card = card.parent()) {
+      const headings = new Set(card.find('h2,h3,h4').toArray().map(h => businessName($(h).text())).filter(Boolean));
+      if (headings.size > 1) break;
+      const websites = card.find('a[href]').toArray().map(a => businessWebsite($(a).attr('href') || '')).filter(Boolean);
+      if (!websites.length) continue;
+      const candidate: Candidate = { key: 'downtown:' + businessName(business), business: business.slice(0, 200), website: websites[0],
+        phone: card.text().match(/\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}/)?.[0] || '',
+        city: 'New Bern', category, source, provider: 'downtown' };
+      if (!found.some(old => sameBusiness(old, candidate))) found.push(candidate);
+      break;
+    }
   });
   return found;
 }
