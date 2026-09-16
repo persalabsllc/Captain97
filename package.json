@@ -16,7 +16,7 @@
     "check:agent": "node --test station-agent/*.test.mjs",
     "check": "npm run lint && npm run typecheck && npm run check:agent",
     "check:outreach": "node --import tsx --test tests/outreach.test.ts",
-    "prebuild": "npm run check:outreach && npm run lint && npm run check:outreach:sources",
+    "prebuild": "npm run check:outreach && npm run lint",
     "check:outreach:sources": "node --import tsx scripts/check-outreach-sources.ts"
   },
   "dependencies": {

@@ -199,3 +199,12 @@ test('API saves discovery source and rejects invalid search choices', async () =
   assert.equal((await POST(request({ action: 'discover', category: 'restaurants', source: 'not-a-source' }))).status, 400);
   assert.equal((await POST(request({ action: 'discover', category: 'invalid-category', source: 'all' }))).status, 400);
 });
+
+test('downtown popup details stay paired with their business across multiple cards', () => {
+  const html = '<main><h2>Directory</h2>'
+    + '<section><div class="flip"><h2 class="eael-elements-flip-box-heading">Cafe One</h2></div><div class="popup"><div><h4>Cafe One</h4></div><p><a href="https://cafe-one.com">Website</a></p></div></section>'
+    + '<section><div class="flip"><h2 class="eael-elements-flip-box-heading">Shop Two</h2></div><div class="popup"><div><h4>Shop Two</h4></div><p><a href="https://shop-two.com">Website</a></p></div></section>'
+    + '<section><h4>No Website</h4></section></main>';
+  const listings = downtownMembers(html, 'https://downtownnewbern.com/shop/', 'retail');
+  assert.deepEqual(listings.map(p => [p.business, p.website]), [['Cafe One', 'https://cafe-one.com/'], ['Shop Two', 'https://shop-two.com/']]);
+});

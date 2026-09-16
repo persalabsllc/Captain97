@@ -174,5 +174,7 @@ Do not enable Redis eviction for this data. Exports include suppression history.
 
 Run `npm run check:outreach` for API/authentication, queue, opt-out, daily-cap,
 concurrency, source-validation and Eastern-time tests. These use isolated storage and
-a fake email provider; they never send live email. `npm run lint` and `npm run build`
+a fake email provider; they never send live email. `npm run check:outreach:sources`
+runs a read-only live-source smoke check without writing CRM data or sending emails.
+The build runs the isolated CRM tests and lint checks before compiling. `npm run lint` and `npm run build`
 verify the application. No outreach credentials or customer data belong in source.

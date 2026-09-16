@@ -117,11 +117,11 @@ export async function readMapCandidates(category: string): Promise<Candidate[]> 
   // Both public providers permit small projects; cache results and fail over once.
   // Endpoints and filters are fixed, never caller-controlled.
   let response: Response | undefined;
-  for (const endpoint of ['https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.private.coffee/api/interpreter']) {
+  for (const endpoint of ['https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter']) {
     try {
       const result = await fetch(endpoint, {
         method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Captain97-BusinessResearch/1.0 (+https://captain97.com)' },
-        body: new URLSearchParams({ data: query }), signal: AbortSignal.timeout(18000), redirect: 'error', cache: 'no-store',
+        body: new URLSearchParams({ data: query }), signal: AbortSignal.timeout(25000), redirect: 'error', cache: 'no-store',
       });
       if (result.ok) { response = result; break; }
       await result.body?.cancel();
